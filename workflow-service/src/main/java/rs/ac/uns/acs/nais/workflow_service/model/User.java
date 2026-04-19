@@ -16,6 +16,8 @@ public class User {
     private String lastName;
     private Role role;
 
+    @Relationship(type = "CREATES")
+    private List<Creates> createdWorkflows = new ArrayList<>();
 
 
     public User() {

@@ -7,8 +7,9 @@ import rs.ac.uns.acs.nais.workflow_service.service.IUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import java.util.Map;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements IUserService {
@@ -20,21 +21,26 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public User getUserById(Long id) {
-        return userRepository.findById(id)
+    public UserDTO getUserById(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "User not found with id: " + id
                 ));
+
+        return mapToDTO(user);
     }
 
     @Override
-    public User createUser(UserDTO userDTO) {
+    public UserDTO createUser(UserDTO userDTO) {
         if (userRepository.existsById(userDTO.getId())) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -42,17 +48,14 @@ public class UserService implements IUserService {
             );
         }
 
-        User user = new User();
-        user.setId(userDTO.getId());
-        user.setFirstName(userDTO.getFirstName());
-        user.setLastName(userDTO.getLastName());
-        user.setRole(userDTO.getRole());
+        User user = mapToEntity(userDTO);
+        User savedUser = userRepository.save(user);
 
-        return userRepository.save(user);
+        return mapToDTO(savedUser);
     }
 
     @Override
-    public User updateUser(Long id, UserDTO userDTO) {
+    public UserDTO updateUser(Long id, UserDTO userDTO) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -63,7 +66,8 @@ public class UserService implements IUserService {
         existingUser.setLastName(userDTO.getLastName());
         existingUser.setRole(userDTO.getRole());
 
-        return userRepository.save(existingUser);
+        User updatedUser = userRepository.save(existingUser);
+        return mapToDTO(updatedUser);
     }
 
     @Override
@@ -78,5 +82,26 @@ public class UserService implements IUserService {
         userRepository.deleteById(id);
     }
 
+    private UserDTO mapToDTO(User user) {
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setRole(user.getRole());
+        return dto;
+    }
 
+    private User mapToEntity(UserDTO dto) {
+        User user = new User();
+        user.setId(dto.getId());
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setRole(dto.getRole());
+        return user;
+    }
+
+    @Override
+    public User createCreatesRelationship(Long userId, Long workflowId, String createdAt) {
+        return userRepository.createCreatesRelationship(userId, workflowId, createdAt);
+    }
 }

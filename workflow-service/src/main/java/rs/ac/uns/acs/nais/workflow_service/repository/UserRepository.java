@@ -7,5 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 public interface UserRepository extends Neo4jRepository<User, Long> {
-
+    @Query("""
+        MATCH (u:User {id: $userId}), (w:Workflow {id: $workflowId})
+        MERGE (u)-[r:CREATES]->(w)
+        SET r.createdAt = $createdAt
+        RETURN u
+        """)
+    User createCreatesRelationship(Long userId, Long workflowId, String createdAt);
 }

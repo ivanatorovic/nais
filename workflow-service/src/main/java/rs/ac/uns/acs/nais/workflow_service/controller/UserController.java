@@ -1,12 +1,10 @@
 package rs.ac.uns.acs.nais.workflow_service.controller;
 
-
 import rs.ac.uns.acs.nais.workflow_service.dto.UserDTO;
 import rs.ac.uns.acs.nais.workflow_service.model.User;
 import rs.ac.uns.acs.nais.workflow_service.service.IUserService;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
-import java.util.Map;
+
 import java.util.List;
 
 @RestController
@@ -20,22 +18,22 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<UserDTO> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
+    public UserDTO getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
     @PostMapping
-    public User createUser(@RequestBody UserDTO userDTO) {
+    public UserDTO createUser(@RequestBody UserDTO userDTO) {
         return userService.createUser(userDTO);
     }
 
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+    public UserDTO updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
         return userService.updateUser(id, userDTO);
     }
 
@@ -44,5 +42,11 @@ public class UserController {
         userService.deleteUser(id);
     }
 
+    @PostMapping("/creates")
+    public User createCreatesRelationship(@RequestParam Long userId,
+                                          @RequestParam Long workflowId,
+                                          @RequestParam String createdAt) {
 
+        return userService.createCreatesRelationship(userId, workflowId, createdAt);
+    }
 }
