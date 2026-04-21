@@ -77,6 +77,7 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
     MATCH (a2:Arrangement)-[:HAS_TAG]->(t)
     WHERE NOT (u)-[:VIEWED]->(a2) AND a1 <> a2
     WITH a2, COUNT(t) AS commonTags
+    WHERE commonTags >= 2
     RETURN a2.id AS id,
            a2.name AS name,
            a2.description AS description,
