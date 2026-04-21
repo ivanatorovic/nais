@@ -104,4 +104,9 @@ public class UserService implements IUserService {
     public User createCreatesRelationship(Long userId, Long workflowId, String createdAt) {
         return userRepository.createCreatesRelationship(userId, workflowId, createdAt);
     }
+
+    @Override
+    public User updateCreatesRelationship(Long userId, Long workflowId, String createdAt) {
+        return userRepository.updateCreatesRelationship(userId, workflowId, createdAt);
+    }
 }

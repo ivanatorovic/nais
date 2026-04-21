@@ -18,4 +18,6 @@ public interface IUserService {
     void deleteUser(Long id);
 
     User createCreatesRelationship(Long userId, Long workflowId, String createdAt);
+
+    User updateCreatesRelationship(Long userId, Long workflowId, String createdAt);
 }

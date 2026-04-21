@@ -49,4 +49,12 @@ public class UserController {
 
         return userService.createCreatesRelationship(userId, workflowId, createdAt);
     }
+
+    @PutMapping("/creates")
+    public User updateCreatesRelationship(@RequestParam Long userId,
+                                          @RequestParam Long workflowId,
+                                          @RequestParam String createdAt) {
+
+        return userService.updateCreatesRelationship(userId, workflowId, createdAt);
+    }
 }

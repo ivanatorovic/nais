@@ -14,4 +14,11 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
         RETURN u
         """)
     User createCreatesRelationship(Long userId, Long workflowId, String createdAt);
+
+    @Query("""
+       MATCH (u:User {id: $userId})-[r:CREATES]->(w:Workflow {id: $workflowId})
+       SET r.createdAt = $createdAt
+       RETURN u
+       """)
+    User updateCreatesRelationship(Long userId, Long workflowId, String createdAt);
 }
