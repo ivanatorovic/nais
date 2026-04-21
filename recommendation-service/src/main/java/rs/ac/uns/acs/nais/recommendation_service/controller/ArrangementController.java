@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.acs.nais.recommendation_service.dto.ArrangementRecommendationDto;
 import rs.ac.uns.acs.nais.recommendation_service.dto.ArrangementRequest;
 import rs.ac.uns.acs.nais.recommendation_service.dto.ArrangementResponse;
+import rs.ac.uns.acs.nais.recommendation_service.dto.UpdateArrangementRequest;
 import rs.ac.uns.acs.nais.recommendation_service.mapper.ArrangementMapper;
 import rs.ac.uns.acs.nais.recommendation_service.model.Arrangement;
 import rs.ac.uns.acs.nais.recommendation_service.service.impl.ArrangementService;
@@ -48,9 +49,9 @@ public class ArrangementController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ArrangementResponse> update(@PathVariable Long id,
-                                                      @RequestBody ArrangementRequest request) {
-        Arrangement arrangement = ArrangementMapper.toEntity(request);
-        Arrangement updated = arrangementService.update(id, arrangement);
+                                                      @RequestBody UpdateArrangementRequest request) {
+
+        Arrangement updated = arrangementService.update(id, request);
         return ResponseEntity.ok(ArrangementMapper.toResponse(updated));
     }
 

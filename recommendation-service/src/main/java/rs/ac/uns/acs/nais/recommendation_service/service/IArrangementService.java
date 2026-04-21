@@ -1,6 +1,7 @@
 package rs.ac.uns.acs.nais.recommendation_service.service;
 
 import rs.ac.uns.acs.nais.recommendation_service.dto.ArrangementRecommendationDto;
+import rs.ac.uns.acs.nais.recommendation_service.dto.UpdateArrangementRequest;
 import rs.ac.uns.acs.nais.recommendation_service.model.Arrangement;
 
 import java.util.List;
@@ -10,7 +11,7 @@ public interface IArrangementService {
     Arrangement save(Arrangement arrangement);
     List<Arrangement> findAll();
     Optional<Arrangement> findById(Long id);
-    Arrangement update(Long id, Arrangement arrangement);
+    Arrangement update(Long id, UpdateArrangementRequest arrangement);
     void delete(Long id);
 
     Arrangement addTagToArrangement(Long arrangementId, Long tagId);

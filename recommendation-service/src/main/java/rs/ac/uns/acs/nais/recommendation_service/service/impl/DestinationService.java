@@ -1,6 +1,9 @@
 package rs.ac.uns.acs.nais.recommendation_service.service.impl;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import rs.ac.uns.acs.nais.recommendation_service.dto.DestinationRequest;
 import rs.ac.uns.acs.nais.recommendation_service.model.Destination;
 import rs.ac.uns.acs.nais.recommendation_service.repository.DestinationRepository;
 import rs.ac.uns.acs.nais.recommendation_service.service.IDestinationService;
@@ -19,6 +22,13 @@ public class DestinationService implements IDestinationService {
 
     @Override
     public Destination save(Destination destination) {
+        if (destinationRepository.existsById(destination.getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Destination with id " + destination.getId() + " already exists."
+            );
+        }
+
         return destinationRepository.save(destination);
     }
 
@@ -33,13 +43,28 @@ public class DestinationService implements IDestinationService {
     }
 
     @Override
-    public Destination update(Long id, Destination destination) {
-        destination.setId(id);
-        return destinationRepository.save(destination);
+    public Destination update(Long id, DestinationRequest destination) {
+        Destination existing = destinationRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Destination not found with id: " + id
+                ));
+
+        existing.setName(destination.getName());
+        existing.setCountry(destination.getCountry());
+
+        return destinationRepository.save(existing);
     }
 
     @Override
     public void delete(Long id) {
+        if (!destinationRepository.existsById(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Destination not found with id: " + id
+            );
+        }
+
         destinationRepository.deleteById(id);
     }
 }

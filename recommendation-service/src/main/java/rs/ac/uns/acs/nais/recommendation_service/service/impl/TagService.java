@@ -1,6 +1,9 @@
 package rs.ac.uns.acs.nais.recommendation_service.service.impl;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import rs.ac.uns.acs.nais.recommendation_service.dto.TagRequest;
 import rs.ac.uns.acs.nais.recommendation_service.model.Tag;
 import rs.ac.uns.acs.nais.recommendation_service.repository.TagRepository;
 import rs.ac.uns.acs.nais.recommendation_service.service.ITagService;
@@ -19,6 +22,13 @@ public class TagService implements ITagService {
 
     @Override
     public Tag save(Tag tag) {
+        if (tagRepository.existsById(tag.getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Tag with id " + tag.getId() + " already exists."
+            );
+        }
+
         return tagRepository.save(tag);
     }
 
@@ -33,13 +43,27 @@ public class TagService implements ITagService {
     }
 
     @Override
-    public Tag update(Long id, Tag tag) {
-        tag.setId(id);
-        return tagRepository.save(tag);
+    public Tag update(Long id, TagRequest tag) {
+        Tag existing = tagRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Tag not found with id: " + id
+                ));
+
+        existing.setName(tag.getName());
+
+        return tagRepository.save(existing);
     }
 
     @Override
     public void delete(Long id) {
+        if (!tagRepository.existsById(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Tag not found with id: " + id
+            );
+        }
+
         tagRepository.deleteById(id);
     }
 }

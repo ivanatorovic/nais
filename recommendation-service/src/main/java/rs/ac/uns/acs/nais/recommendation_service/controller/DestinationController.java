@@ -2,6 +2,7 @@ package rs.ac.uns.acs.nais.recommendation_service.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.ac.uns.acs.nais.recommendation_service.dto.DestinationRequest;
 import rs.ac.uns.acs.nais.recommendation_service.model.Destination;
 import rs.ac.uns.acs.nais.recommendation_service.service.impl.DestinationService;
 
@@ -36,7 +37,7 @@ public class DestinationController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Destination> update(@PathVariable Long id, @RequestBody Destination destination) {
+    public ResponseEntity<Destination> update(@PathVariable Long id, @RequestBody DestinationRequest destination) {
         return ResponseEntity.ok(destinationService.update(id, destination));
     }
 

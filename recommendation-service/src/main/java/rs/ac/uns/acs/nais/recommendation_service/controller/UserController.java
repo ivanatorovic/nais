@@ -47,11 +47,8 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> update(@PathVariable Long id,
-                                               @RequestBody UserRequest request) {
-
-        User user = UserMapper.toEntity(request);
-        User updated = userService.update(id, user);
-
+                                               @RequestBody UserUpdateRequest request) {
+        User updated = userService.update(id, request);
         return ResponseEntity.ok(UserMapper.toResponse(updated));
     }
 
@@ -79,22 +76,9 @@ public class UserController {
     }
 
     @PostMapping("/booked")
-    public ResponseEntity<User> createBookedRelationship(@RequestBody BookedRequestDTO dto) {
+    public ResponseEntity<User> addOrUpdateBooked(@RequestBody BookedRequestDTO dto) {
         return ResponseEntity.ok(
-                userService.createBookedRelationship(
-                        dto.getUserId(),
-                        dto.getArrangementId(),
-                        dto.getBookingDate(),
-                        dto.getPersons(),
-                        dto.getTotalPrice()
-                )
-        );
-    }
-
-    @PutMapping("/booked")
-    public ResponseEntity<User> updateBookedRelationship(@RequestBody BookedRequestDTO dto) {
-        return ResponseEntity.ok(
-                userService.updateBookedRelationship(
+                userService.addOrUpdateBooked(
                         dto.getUserId(),
                         dto.getArrangementId(),
                         dto.getBookingDate(),
