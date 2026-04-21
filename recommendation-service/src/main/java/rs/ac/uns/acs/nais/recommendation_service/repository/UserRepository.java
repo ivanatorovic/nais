@@ -34,27 +34,23 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
                                   @Param("arrangementId") Long arrangementId);
 
     @Query("""
-        MATCH (u:User {id: $userId})-[r:BOOKED]->(a:Arrangement {id: $arrangementId})
-        SET r.bookingDate = $bookingDate, r.persons = $persons, r.totalPrice = $totalPrice
-        RETURN u
-    """)
-    User updateBookedRelationship(@Param("userId") Long userId,
-                                  @Param("arrangementId") Long arrangementId,
-                                  @Param("bookingDate") String bookingDate,
-                                  @Param("persons") Integer persons,
-                                  @Param("totalPrice") Double totalPrice);
-
-    @Query("""
-        MATCH (u:User {id: $userId}), (a:Arrangement {id: $arrangementId})
-        MERGE (u)-[r:BOOKED]->(a)
-        SET r.bookingDate = $bookingDate, r.persons = $persons, r.totalPrice = $totalPrice
-        RETURN u
-    """)
-    User createBookedRelationship(@Param("userId") Long userId,
-                                  @Param("arrangementId") Long arrangementId,
-                                  @Param("bookingDate") String bookingDate,
-                                  @Param("persons") Integer persons,
-                                  @Param("totalPrice") Double totalPrice);
+    MATCH (u:User {id: $userId}), (a:Arrangement {id: $arrangementId})
+    MERGE (u)-[r:BOOKED]->(a)
+    ON CREATE SET
+        r.bookingDate = $bookingDate,
+        r.persons = $persons,
+        r.totalPrice = $totalPrice
+    ON MATCH SET
+        r.bookingDate = $bookingDate,
+        r.persons = $persons,
+        r.totalPrice = $totalPrice
+    RETURN u
+""")
+    User addOrUpdateBooked(@Param("userId") Long userId,
+                           @Param("arrangementId") Long arrangementId,
+                           @Param("bookingDate") String bookingDate,
+                           @Param("persons") Integer persons,
+                           @Param("totalPrice") Double totalPrice);
 
     @Query("""
         MATCH (u:User {id: $userId})-[r:BOOKED]->(a:Arrangement {id: $arrangementId})
@@ -81,6 +77,7 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
     MATCH (a2:Arrangement)-[:HAS_TAG]->(t)
     WHERE NOT (u)-[:VIEWED]->(a2) AND a1 <> a2
     WITH a2, COUNT(t) AS commonTags
+    WHERE commonTags >= 2
     RETURN a2.id AS id,
            a2.name AS name,
            a2.description AS description,

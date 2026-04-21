@@ -2,6 +2,7 @@ package rs.ac.uns.acs.nais.recommendation_service.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rs.ac.uns.acs.nais.recommendation_service.dto.TagRequest;
 import rs.ac.uns.acs.nais.recommendation_service.model.Tag;
 import rs.ac.uns.acs.nais.recommendation_service.service.impl.TagService;
 
@@ -36,7 +37,7 @@ public class TagController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Tag> update(@PathVariable Long id, @RequestBody Tag tag) {
+    public ResponseEntity<Tag> update(@PathVariable Long id, @RequestBody TagRequest tag) {
         return ResponseEntity.ok(tagService.update(id, tag));
     }
 
