@@ -15,4 +15,6 @@ public interface IOfferService {
     OfferDTO updateOffer(Long id, OfferDTO offerDTO);
 
     void deleteOffer(Long id);
+
+  
 }

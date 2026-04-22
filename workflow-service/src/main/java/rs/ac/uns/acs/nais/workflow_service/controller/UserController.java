@@ -50,11 +50,28 @@ public class UserController {
         return userService.createCreatesRelationship(userId, workflowId, createdAt);
     }
 
-    @PutMapping("/creates")
+    @PatchMapping("/creates")
     public User updateCreatesRelationship(@RequestParam Long userId,
                                           @RequestParam Long workflowId,
                                           @RequestParam String createdAt) {
 
         return userService.updateCreatesRelationship(userId, workflowId, createdAt);
+    }
+
+    @GetMapping("/creates")
+    public List<User> findAllCreatesRelationships() {
+        return userService.findAllCreatesRelationships();
+    }
+
+    @GetMapping("/creates/one")
+    public User findOneCreatesRelationship(@RequestParam Long userId,
+                                           @RequestParam Long workflowId) {
+        return userService.findOneCreatesRelationship(userId, workflowId);
+    }
+
+    @DeleteMapping("/{userId}/workflows/{workflowId}")
+    public void deleteCreatesRelationship(@PathVariable Long userId,
+                                          @PathVariable Long workflowId) {
+        userService.deleteCreatesRelationship(userId, workflowId);
     }
 }

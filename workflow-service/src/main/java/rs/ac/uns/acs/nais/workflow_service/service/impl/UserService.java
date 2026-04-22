@@ -40,18 +40,14 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public UserDTO createUser(UserDTO userDTO) {
-        if (userRepository.existsById(userDTO.getId())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "User with id " + userDTO.getId() + " already exists."
-            );
-        }
+    public UserDTO createUser(UserDTO dto) {
+        Long maxId = userRepository.findMaxId();
+        Long newId = maxId + 1;
 
-        User user = mapToEntity(userDTO);
-        User savedUser = userRepository.save(user);
+        User user = mapToEntity(dto);
+        user.setId(newId);
 
-        return mapToDTO(savedUser);
+        return mapToDTO(userRepository.save(user));
     }
 
     @Override
@@ -62,9 +58,24 @@ public class UserService implements IUserService {
                         "User not found with id: " + id
                 ));
 
-        existingUser.setFirstName(userDTO.getFirstName());
-        existingUser.setLastName(userDTO.getLastName());
-        existingUser.setRole(userDTO.getRole());
+        if (userDTO.getId() != null && !userDTO.getId().equals(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Changing user ID is not allowed."
+            );
+        }
+
+        if (userDTO.getFirstName() != null) {
+            existingUser.setFirstName(userDTO.getFirstName());
+        }
+
+        if (userDTO.getLastName() != null) {
+            existingUser.setLastName(userDTO.getLastName());
+        }
+
+        if (userDTO.getRole() != null) {
+            existingUser.setRole(userDTO.getRole());
+        }
 
         User updatedUser = userRepository.save(existingUser);
         return mapToDTO(updatedUser);
@@ -108,5 +119,29 @@ public class UserService implements IUserService {
     @Override
     public User updateCreatesRelationship(Long userId, Long workflowId, String createdAt) {
         return userRepository.updateCreatesRelationship(userId, workflowId, createdAt);
+    }
+
+    @Override
+    public User findOneCreatesRelationship(Long userId, Long workflowId) {
+        User user = userRepository.findOneCreatesRelationship(userId, workflowId);
+
+        if (user == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "CREATES relationship not found for userId: " + userId + " and workflowId: " + workflowId
+            );
+        }
+
+        return user;
+    }
+
+    @Override
+    public List<User> findAllCreatesRelationships() {
+        return userRepository.findAllCreatesRelationships();
+    }
+
+    @Override
+    public void deleteCreatesRelationship(Long userId, Long workflowId) {
+        userRepository.deleteCreatesRelationship(userId, workflowId);
     }
 }

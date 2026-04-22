@@ -31,7 +31,7 @@ public class OfferController {
         return offerService.createOffer(offerDTO);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public OfferDTO updateOffer(@PathVariable Long id, @RequestBody OfferDTO offerDTO) {
         return offerService.updateOffer(id, offerDTO);
     }
@@ -40,4 +40,6 @@ public class OfferController {
     public void deleteOffer(@PathVariable Long id) {
         offerService.deleteOffer(id);
     }
+
+
 }

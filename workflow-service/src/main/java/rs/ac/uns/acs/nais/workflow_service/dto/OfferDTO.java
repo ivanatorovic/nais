@@ -7,8 +7,21 @@ public class OfferDTO {
     private String value;
     private String name;
     private Double rating;
+    private Double adultsPrice;
+    private Double kidsPrice;
 
     public OfferDTO() {
+    }
+
+    public OfferDTO(Long id, String type, String value, String name,
+                    Double rating, Double adultsPrice, Double kidsPrice) {
+        this.id = id;
+        this.type = type;
+        this.value = value;
+        this.name = name;
+        this.rating = rating;
+        this.adultsPrice = adultsPrice;
+        this.kidsPrice = kidsPrice;
     }
 
     public Long getId() {
@@ -31,6 +44,14 @@ public class OfferDTO {
         return rating;
     }
 
+    public Double getAdultsPrice() {
+        return adultsPrice;
+    }
+
+    public Double getKidsPrice() {
+        return kidsPrice;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -49,5 +70,13 @@ public class OfferDTO {
 
     public void setRating(Double rating) {
         this.rating = rating;
+    }
+
+    public void setAdultsPrice(Double adultsPrice) {
+        this.adultsPrice = adultsPrice;
+    }
+
+    public void setKidsPrice(Double kidsPrice) {
+        this.kidsPrice = kidsPrice;
     }
 }

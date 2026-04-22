@@ -31,7 +31,7 @@ public class WorkflowController {
         return workflowService.createWorkflow(workflowDTO);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public WorkflowDTO updateWorkflow(@PathVariable Long id, @RequestBody WorkflowDTO workflowDTO) {
         return workflowService.updateWorkflow(id, workflowDTO);
     }
