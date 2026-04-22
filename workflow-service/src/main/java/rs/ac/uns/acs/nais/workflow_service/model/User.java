@@ -62,5 +62,12 @@ public class User {
         this.role = role;
     }
 
+    public List<Creates> getCreatedWorkflows() {
+        return createdWorkflows;
+    }
+
+    public void setCreatedWorkflows(List<Creates> createdWorkflows) {
+        this.createdWorkflows = createdWorkflows;
+    }
 
 }

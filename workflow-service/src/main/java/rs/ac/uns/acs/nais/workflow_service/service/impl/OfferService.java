@@ -42,14 +42,12 @@ public class OfferService implements IOfferService {
 
     @Override
     public OfferDTO createOffer(OfferDTO offerDTO) {
-        if (offerRepository.existsById(offerDTO.getId())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Offer with id " + offerDTO.getId() + " already exists."
-            );
-        }
+        Long maxId = offerRepository.findMaxId();
+        Long newId = maxId + 1;
 
         Offer offer = mapToEntity(offerDTO);
+        offer.setId(newId);
+
         return mapToDTO(offerRepository.save(offer));
     }
 
@@ -61,10 +59,36 @@ public class OfferService implements IOfferService {
                         "Offer not found with id: " + id
                 ));
 
-        existing.setType(OfferType.valueOf(offerDTO.getType().toUpperCase()));
-        existing.setValue(offerDTO.getValue());
-        existing.setName(offerDTO.getName());
-        existing.setRating(offerDTO.getRating());
+        if (offerDTO.getId() != null && !offerDTO.getId().equals(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Changing offer ID is not allowed."
+            );
+        }
+
+        if (offerDTO.getType() != null) {
+            existing.setType(OfferType.valueOf(offerDTO.getType().toUpperCase()));
+        }
+
+        if (offerDTO.getValue() != null) {
+            existing.setValue(offerDTO.getValue());
+        }
+
+        if (offerDTO.getName() != null) {
+            existing.setName(offerDTO.getName());
+        }
+
+        if (offerDTO.getRating() != null) {
+            existing.setRating(offerDTO.getRating());
+        }
+
+        if (offerDTO.getAdultsPrice() != null) {
+            existing.setAdultsPrice(offerDTO.getAdultsPrice());
+        }
+
+        if (offerDTO.getKidsPrice() != null) {
+            existing.setKidsPrice(offerDTO.getKidsPrice());
+        }
 
         return mapToDTO(offerRepository.save(existing));
     }
@@ -81,6 +105,7 @@ public class OfferService implements IOfferService {
         offerRepository.deleteById(id);
     }
 
+
     private OfferDTO mapToDTO(Offer offer) {
         OfferDTO dto = new OfferDTO();
         dto.setId(offer.getId());
@@ -88,6 +113,8 @@ public class OfferService implements IOfferService {
         dto.setValue(offer.getValue());
         dto.setName(offer.getName());
         dto.setRating(offer.getRating());
+        dto.setAdultsPrice(offer.getAdultsPrice());
+        dto.setKidsPrice(offer.getKidsPrice());
         return dto;
     }
 
@@ -98,6 +125,9 @@ public class OfferService implements IOfferService {
         offer.setValue(dto.getValue());
         offer.setName(dto.getName());
         offer.setRating(dto.getRating());
+        offer.setAdultsPrice(dto.getAdultsPrice());
+        offer.setKidsPrice(dto.getKidsPrice());
         return offer;
     }
+
 }

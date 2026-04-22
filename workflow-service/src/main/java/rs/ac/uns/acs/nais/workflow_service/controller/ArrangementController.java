@@ -2,6 +2,8 @@ package rs.ac.uns.acs.nais.workflow_service.controller;
 
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.acs.nais.workflow_service.dto.ArrangementDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.OfferDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowDTO;
 import rs.ac.uns.acs.nais.workflow_service.service.IArrangementService;
 
 import java.util.List;
@@ -31,7 +33,7 @@ public class ArrangementController {
         return arrangementService.createArrangement(arrangementDTO);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ArrangementDTO updateArrangement(@PathVariable Long id, @RequestBody ArrangementDTO arrangementDTO) {
         return arrangementService.updateArrangement(id, arrangementDTO);
     }
@@ -53,8 +55,8 @@ public class ArrangementController {
     }
 
     @GetMapping("/{arrangementId}/based-on")
-    public ArrangementDTO findArrangementWithWorkflow(@PathVariable Long arrangementId) {
-        return arrangementService.findArrangementWithWorkflow(arrangementId);
+    public WorkflowDTO getWorkflowForArrangement(@PathVariable Long arrangementId) {
+        return arrangementService.getWorkflowForArrangement(arrangementId);
     }
 
     @PostMapping("/{arrangementId}/offers/{offerId}")
@@ -70,7 +72,7 @@ public class ArrangementController {
     }
 
     @GetMapping("/{arrangementId}/offers")
-    public ArrangementDTO findArrangementWithOffers(@PathVariable Long arrangementId) {
-        return arrangementService.findArrangementWithOffers(arrangementId);
+    public List<OfferDTO> getOffersForArrangement(@PathVariable Long arrangementId) {
+        return arrangementService.getOffersForArrangement(arrangementId);
     }
 }

@@ -41,16 +41,13 @@ public class WorkflowService implements IWorkflowService {
 
     @Override
     public WorkflowDTO createWorkflow(WorkflowDTO workflowDTO) {
-        if (workflowRepository.existsById(workflowDTO.getId())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Workflow with id " + workflowDTO.getId() + " already exists."
-            );
-        }
+        Long maxId = workflowRepository.findMaxId();
+        Long newId = maxId + 1;
 
         Workflow workflow = mapToEntity(workflowDTO);
-        Workflow savedWorkflow = workflowRepository.save(workflow);
+        workflow.setId(newId);
 
+        Workflow savedWorkflow = workflowRepository.save(workflow);
         return mapToDTO(savedWorkflow);
     }
 
@@ -62,7 +59,16 @@ public class WorkflowService implements IWorkflowService {
                         "Workflow not found with id: " + id
                 ));
 
-        existing.setName(workflowDTO.getName());
+        if (workflowDTO.getId() != null && !workflowDTO.getId().equals(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Changing workflow ID is not allowed."
+            );
+        }
+
+        if (workflowDTO.getName() != null) {
+            existing.setName(workflowDTO.getName());
+        }
 
         Workflow updatedWorkflow = workflowRepository.save(existing);
         return mapToDTO(updatedWorkflow);

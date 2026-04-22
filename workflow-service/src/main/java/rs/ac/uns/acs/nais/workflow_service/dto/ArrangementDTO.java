@@ -1,5 +1,7 @@
 package rs.ac.uns.acs.nais.workflow_service.dto;
 
+import java.util.List;
+
 public class ArrangementDTO {
 
     private Long id;
@@ -8,6 +10,7 @@ public class ArrangementDTO {
     private String description;
     private String startDate;
     private String endDate;
+
 
     public ArrangementDTO() {
     }
@@ -20,6 +23,7 @@ public class ArrangementDTO {
         this.description = description;
         this.startDate = startDate;
         this.endDate = endDate;
+
     }
 
     public Long getId() {
@@ -70,4 +74,5 @@ public class ArrangementDTO {
     public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
+
 }

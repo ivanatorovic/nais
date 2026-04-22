@@ -20,11 +20,12 @@ public class Arrangement {
 
     @Relationship(type = "BASED_ON", direction = Relationship.Direction.OUTGOING)
     private Workflow workflow;
-    public Arrangement() {
-    }
 
     @Relationship(value = "HAS_OFFER", direction = Relationship.Direction.OUTGOING)
     private List<Offer> offers;
+
+    public Arrangement() {
+    }
 
 
     public Arrangement(Long id, String name, String destination, String description,

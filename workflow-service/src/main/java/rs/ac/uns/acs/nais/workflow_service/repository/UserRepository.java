@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface UserRepository extends Neo4jRepository<User, Long> {
+    @Query("MATCH (u:User) RETURN coalesce(max(u.id), 0)")
+    Long findMaxId();
+
     @Query("""
         MATCH (u:User {id: $userId}), (w:Workflow {id: $workflowId})
         MERGE (u)-[r:CREATES]->(w)
@@ -21,4 +24,23 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
        RETURN u
        """)
     User updateCreatesRelationship(Long userId, Long workflowId, String createdAt);
+
+    @Query("""
+       MATCH (u:User {id: $userId})-[r:CREATES]->(w:Workflow {id: $workflowId})
+       RETURN u, r, w
+    """)
+    User findOneCreatesRelationship(Long userId, Long workflowId);
+
+    @Query("""
+    MATCH (u:User)-[r:CREATES]->(w:Workflow)
+    RETURN u, collect(r), collect(w)
+    """)
+    List<User> findAllCreatesRelationships();
+
+    @Query("""
+        MATCH (u:User {id: $userId})-[r:CREATES]->(w:Workflow {id: $workflowId})
+        DELETE r
+        """)
+    void deleteCreatesRelationship(Long userId, Long workflowId);
+
 }

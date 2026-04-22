@@ -20,4 +20,10 @@ public interface IUserService {
     User createCreatesRelationship(Long userId, Long workflowId, String createdAt);
 
     User updateCreatesRelationship(Long userId, Long workflowId, String createdAt);
+
+    User findOneCreatesRelationship(Long userId, Long workflowId);
+
+    List<User> findAllCreatesRelationships();
+
+    void deleteCreatesRelationship(Long userId, Long workflowId);
 }
