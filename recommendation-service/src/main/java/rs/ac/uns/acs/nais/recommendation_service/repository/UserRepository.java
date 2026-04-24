@@ -39,11 +39,13 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
     ON CREATE SET
         r.bookingDate = $bookingDate,
         r.persons = $persons,
-        r.totalPrice = $totalPrice
+        r.totalPrice = $totalPrice,
+        r.count = 1
     ON MATCH SET
         r.bookingDate = $bookingDate,
         r.persons = $persons,
-        r.totalPrice = $totalPrice
+        r.totalPrice = $totalPrice,
+        r.count = coalesce(r.count, 0) + 1
     RETURN u
 """)
     User addOrUpdateBooked(@Param("userId") Long userId,
@@ -90,16 +92,26 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
 
     @Query("""
     MATCH (u:User {id: $userId})-[:BOOKED]->(a1:Arrangement)
+    MATCH (a1)-[:HAS_TAG]->(t:Tag)
+
     MATCH (other:User)-[:BOOKED]->(a1)
     MATCH (other)-[:BOOKED]->(a2:Arrangement)
-    WHERE u <> other AND NOT (u)-[:BOOKED]->(a2)
-    WITH a2, COUNT(other) AS popularity
+    MATCH (a2)-[:HAS_TAG]->(t)
+
+    WHERE u <> other
+      AND a1 <> a2
+      AND NOT (u)-[:BOOKED]->(a2)
+
+    WITH a2, COUNT(DISTINCT t) AS commonTags, COUNT(DISTINCT other) AS popularity
+    WHERE commonTags >= 1
+
     RETURN a2.id AS id,
            a2.name AS name,
            a2.description AS description,
            a2.price AS price,
            a2.durationDays AS durationDays
-    ORDER BY popularity DESC
+
+    ORDER BY commonTags DESC, popularity DESC
     LIMIT 5
 """)
     List<ArrangementRecommendationDto> recommendBasedOnBooked(@Param("userId") Long userId);
