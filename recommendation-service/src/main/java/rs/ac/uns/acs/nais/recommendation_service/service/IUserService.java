@@ -1,7 +1,9 @@
 package rs.ac.uns.acs.nais.recommendation_service.service;
 
 import rs.ac.uns.acs.nais.recommendation_service.dto.ArrangementRecommendationDto;
+import rs.ac.uns.acs.nais.recommendation_service.dto.BookedArrangementResponse;
 import rs.ac.uns.acs.nais.recommendation_service.dto.UserUpdateRequest;
+import rs.ac.uns.acs.nais.recommendation_service.dto.ViewedArrangementResponse;
 import rs.ac.uns.acs.nais.recommendation_service.model.User;
 
 import java.util.List;
@@ -16,11 +18,11 @@ public interface IUserService {
 
     User addOrUpdateViewed(Long userId, Long arrangementId, String viewedAt);
     void deleteViewedRelationship(Long userId, Long arrangementId);
-    User findUserWithViewedRelationships(Long userId);
+    List<ViewedArrangementResponse> findUserWithViewedRelationships(Long userId);
 
     User addOrUpdateBooked(Long userId, Long arrangementId, String bookingDate, Integer persons, Double totalPrice);
     void deleteBookedRelationship(Long userId, Long arrangementId);
-    User findUserWithBookedRelationships(Long userId);
+    List<BookedArrangementResponse> findUserWithBookedRelationships(Long userId);
 
     List<ArrangementRecommendationDto> recommendBasedOnViewed(Long userId);
     List<ArrangementRecommendationDto> recommendBasedOnBooked(Long userId);

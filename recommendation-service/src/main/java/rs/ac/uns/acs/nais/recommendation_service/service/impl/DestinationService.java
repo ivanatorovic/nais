@@ -43,15 +43,20 @@ public class DestinationService implements IDestinationService {
     }
 
     @Override
-    public Destination update(Long id, DestinationRequest destination) {
+    public Destination update(Long id, DestinationRequest request) {
         Destination existing = destinationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Destination not found with id: " + id
                 ));
 
-        existing.setName(destination.getName());
-        existing.setCountry(destination.getCountry());
+        if (request.getName() != null) {
+            existing.setName(request.getName());
+        }
+
+        if (request.getCountry() != null) {
+            existing.setCountry(request.getCountry());
+        }
 
         return destinationRepository.save(existing);
     }

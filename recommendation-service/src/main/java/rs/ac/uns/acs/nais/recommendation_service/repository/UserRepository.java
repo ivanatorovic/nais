@@ -5,12 +5,15 @@ import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import rs.ac.uns.acs.nais.recommendation_service.dto.ArrangementRecommendationDto;
+import rs.ac.uns.acs.nais.recommendation_service.dto.BookedArrangementResponse;
+import rs.ac.uns.acs.nais.recommendation_service.dto.ViewedArrangementResponse;
 import rs.ac.uns.acs.nais.recommendation_service.model.User;
 
 import java.util.List;
 
 @Repository
 public interface UserRepository extends Neo4jRepository<User, Long> {
+
     @Query("""
     MATCH (u:User {id: $userId}), (a:Arrangement {id: $arrangementId})
     MERGE (u)-[r:VIEWED]->(a)
@@ -62,16 +65,24 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
                                   @Param("arrangementId") Long arrangementId);
 
     @Query("""
-        MATCH (u:User {id: $userId})-[r:VIEWED]->(a:Arrangement)
-        RETURN u, collect(r), collect(a)
-    """)
-    User findUserWithViewedRelationships(@Param("userId") Long userId);
+    MATCH (u:User {id: $userId})-[r:VIEWED]->(a:Arrangement)
+    RETURN a.id AS arrangementId,
+           a.name AS arrangementName,
+           r.viewedAt AS viewedAt,
+           r.count AS count
+""")
+    List<ViewedArrangementResponse> findUserWithViewedRelationships(@Param("userId") Long userId);
 
     @Query("""
-        MATCH (u:User {id: $userId})-[r:BOOKED]->(a:Arrangement)
-        RETURN u, collect(r), collect(a)
-    """)
-    User findUserWithBookedRelationships(@Param("userId") Long userId);
+    MATCH (u:User {id: $userId})-[r:BOOKED]->(a:Arrangement)
+    RETURN a.id AS arrangementId,
+           a.name AS arrangementName,
+           r.bookingDate AS bookingDate,
+           r.persons AS persons,
+           r.totalPrice AS totalPrice,
+           r.count AS count
+""")
+    List<BookedArrangementResponse> findUserWithBookedRelationships(@Param("userId") Long userId);
 
 
     @Query("""

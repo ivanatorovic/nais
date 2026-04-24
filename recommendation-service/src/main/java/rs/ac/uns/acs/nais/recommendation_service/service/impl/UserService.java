@@ -4,7 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import rs.ac.uns.acs.nais.recommendation_service.dto.ArrangementRecommendationDto;
+import rs.ac.uns.acs.nais.recommendation_service.dto.BookedArrangementResponse;
 import rs.ac.uns.acs.nais.recommendation_service.dto.UserUpdateRequest;
+import rs.ac.uns.acs.nais.recommendation_service.dto.ViewedArrangementResponse;
 import rs.ac.uns.acs.nais.recommendation_service.model.User;
 import rs.ac.uns.acs.nais.recommendation_service.repository.ArrangementRepository;
 import rs.ac.uns.acs.nais.recommendation_service.repository.UserRepository;
@@ -53,8 +55,13 @@ public class UserService implements IUserService {
                         "User not found with id: " + id
                 ));
 
-        existing.setUsername(request.getUsername());
-        existing.setEmail(request.getEmail());
+        if (request.getUsername() != null) {
+            existing.setUsername(request.getUsername());
+        }
+
+        if (request.getEmail() != null) {
+            existing.setEmail(request.getEmail());
+        }
 
         return userRepository.save(existing);
     }
@@ -110,7 +117,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User findUserWithViewedRelationships(Long userId) {
+    public List<ViewedArrangementResponse> findUserWithViewedRelationships(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
@@ -160,7 +167,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User findUserWithBookedRelationships(Long userId) {
+    public  List<BookedArrangementResponse> findUserWithBookedRelationships(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
