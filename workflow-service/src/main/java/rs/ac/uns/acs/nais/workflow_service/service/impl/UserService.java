@@ -1,12 +1,16 @@
 package rs.ac.uns.acs.nais.workflow_service.service.impl;
 
+import rs.ac.uns.acs.nais.workflow_service.dto.AdministratorPublishStatsDTO;
 import rs.ac.uns.acs.nais.workflow_service.dto.UserDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.UserWorkflowStatsDTO;
+import rs.ac.uns.acs.nais.workflow_service.model.Role;
 import rs.ac.uns.acs.nais.workflow_service.model.User;
 import rs.ac.uns.acs.nais.workflow_service.repository.UserRepository;
 import rs.ac.uns.acs.nais.workflow_service.service.IUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import rs.ac.uns.acs.nais.workflow_service.dto.DirectorWorkflowStatsDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,7 +94,7 @@ public class UserService implements IUserService {
             );
         }
 
-        userRepository.deleteById(id);
+        userRepository.deleteUserByCustomId(id);
     }
 
     private UserDTO mapToDTO(User user) {
@@ -113,11 +117,37 @@ public class UserService implements IUserService {
 
     @Override
     public User createCreatesRelationship(Long userId, Long workflowId, String createdAt) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found with id: " + userId
+                ));
+
+        if (user.getRole() != Role.ADMINISTRATOR) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only ADMINISTRATOR can create workflow relationships."
+            );
+        }
+
         return userRepository.createCreatesRelationship(userId, workflowId, createdAt);
     }
 
     @Override
     public User updateCreatesRelationship(Long userId, Long workflowId, String createdAt) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found with id: " + userId
+                ));
+
+        if (user.getRole() != Role.ADMINISTRATOR) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only ADMINISTRATOR can update workflow relationships."
+            );
+        }
+
         return userRepository.updateCreatesRelationship(userId, workflowId, createdAt);
     }
 
@@ -142,6 +172,113 @@ public class UserService implements IUserService {
 
     @Override
     public void deleteCreatesRelationship(Long userId, Long workflowId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found with id: " + userId
+                ));
+
+        if (user.getRole() != Role.ADMINISTRATOR) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only ADMINISTRATOR can delete workflow relationships."
+            );
+        }
+
         userRepository.deleteCreatesRelationship(userId, workflowId);
+    }
+
+    @Override
+    public User createPublishesRelationship(Long userId, Long arrangementId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found with id: " + userId
+                ));
+
+        if (user.getRole() != Role.DIREKTOR) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only DIRECTOR can publish arrangements."
+            );
+        }
+
+        if (userRepository.existsPublishesRelationshipForArrangement(arrangementId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Arrangement is already published by another director."
+            );
+        }
+
+        User result = userRepository.createPublishesRelationship(userId, arrangementId);
+
+        if (result == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User or Arrangement not found."
+            );
+        }
+
+        return result;
+    }
+
+    @Override
+    public User findOnePublishesRelationship(Long userId, Long arrangementId) {
+        User user = userRepository.findOnePublishesRelationship(userId, arrangementId);
+
+        if (user == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "PUBLISHES relationship not found for userId: " + userId + " and arrangementId: " + arrangementId
+            );
+        }
+
+        return user;
+    }
+
+    @Override
+    public List<User> findAllPublishesRelationships() {
+        return userRepository.findAllPublishesRelationships();
+    }
+
+    @Override
+    public void deletePublishesRelationship(Long userId, Long arrangementId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found with id: " + userId
+                ));
+
+        if (user.getRole() != Role.DIREKTOR) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only DIRECTOR can delete publishes relationships."
+            );
+        }
+
+        User existing = userRepository.findOnePublishesRelationship(userId, arrangementId);
+        if (existing == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "PUBLISHES relationship not found for userId: " + userId + " and arrangementId: " + arrangementId
+            );
+        }
+
+        userRepository.deletePublishesRelationship(userId, arrangementId);
+    }
+
+    @Override
+    public List<UserWorkflowStatsDTO> getUserWorkflowStats() {
+        return userRepository.getUserWorkflowStats();
+    }
+
+    @Override
+    public List<DirectorWorkflowStatsDTO> getDirectorWorkflowStats() {
+        return userRepository.getDirectorWorkflowStats();
+    }
+
+    @Override
+    public List<AdministratorPublishStatsDTO> getAdministratorPublishStats() {
+        return userRepository.getAdministratorPublishStats();
     }
 }

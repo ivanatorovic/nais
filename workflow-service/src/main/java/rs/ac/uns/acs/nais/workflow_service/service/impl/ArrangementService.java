@@ -3,9 +3,7 @@ package rs.ac.uns.acs.nais.workflow_service.service.impl;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import rs.ac.uns.acs.nais.workflow_service.dto.ArrangementDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.OfferDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.*;
 import rs.ac.uns.acs.nais.workflow_service.model.Arrangement;
 import rs.ac.uns.acs.nais.workflow_service.model.Offer;
 import rs.ac.uns.acs.nais.workflow_service.repository.ArrangementRepository;
@@ -104,7 +102,7 @@ public class ArrangementService implements IArrangementService {
             );
         }
 
-        arrangementRepository.deleteById(id);
+        arrangementRepository.deleteArrangementByCustomId(id);
     }
 
 
@@ -148,6 +146,20 @@ public class ArrangementService implements IArrangementService {
 
     @Override
     public void deleteBasedOnRelationship(Long arrangementId) {
+        if (!arrangementRepository.existsById(arrangementId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Arrangement not found with id: " + arrangementId
+            );
+        }
+
+        if (!arrangementRepository.existsBasedOnRelationship(arrangementId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "BASED_ON relationship not found for arrangement with id: " + arrangementId
+            );
+        }
+
         arrangementRepository.deleteBasedOnRelationship(arrangementId);
     }
 
@@ -198,6 +210,21 @@ public class ArrangementService implements IArrangementService {
 
     @Override
     public void deleteOfferFromArrangement(Long arrangementId, Long offerId) {
+        if (!arrangementRepository.existsById(arrangementId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Arrangement not found with id: " + arrangementId
+            );
+        }
+
+        if (!arrangementRepository.existsHasOfferRelationshipForArrangement(arrangementId, offerId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "HAS_OFFER relationship not found for arrangementId: "
+                            + arrangementId + " and offerId: " + offerId
+            );
+        }
+
         arrangementRepository.deleteOfferFromArrangement(arrangementId, offerId);
     }
 
@@ -233,5 +260,16 @@ public class ArrangementService implements IArrangementService {
         dto.setKidsPrice(offer.getKidsPrice());
         return dto;
     }
+
+    @Override
+    public List<ArrangementPriceDTO> getArrangementPriceAnalysis() {
+        return arrangementRepository.getArrangementPriceAnalysis();
+    }
+
+    @Override
+    public List<ArrangementRatingDTO> getArrangementRatings() {
+        return arrangementRepository.getArrangementRatings();
+    }
+
 
 }

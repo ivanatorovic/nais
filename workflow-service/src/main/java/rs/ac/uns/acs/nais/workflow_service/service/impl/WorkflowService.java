@@ -4,7 +4,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowOfferStatsDTO;
+import rs.ac.uns.acs.nais.workflow_service.model.Role;
+import rs.ac.uns.acs.nais.workflow_service.model.User;
 import rs.ac.uns.acs.nais.workflow_service.model.Workflow;
+import rs.ac.uns.acs.nais.workflow_service.repository.UserRepository;
 import rs.ac.uns.acs.nais.workflow_service.repository.WorkflowRepository;
 import rs.ac.uns.acs.nais.workflow_service.service.IWorkflowService;
 
@@ -15,9 +19,11 @@ import java.util.stream.Collectors;
 public class WorkflowService implements IWorkflowService {
 
     private final WorkflowRepository workflowRepository;
+    private final UserRepository userRepository;
 
-    public WorkflowService(WorkflowRepository workflowRepository) {
+    public WorkflowService(WorkflowRepository workflowRepository, UserRepository userRepository) {
         this.workflowRepository = workflowRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -40,7 +46,20 @@ public class WorkflowService implements IWorkflowService {
     }
 
     @Override
-    public WorkflowDTO createWorkflow(WorkflowDTO workflowDTO) {
+    public WorkflowDTO createWorkflow(Long userId, WorkflowDTO workflowDTO) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found with id: " + userId
+                ));
+
+        if (user.getRole() != Role.ADMINISTRATOR) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only ADMINISTRATOR can create workflows."
+            );
+        }
+
         Long maxId = workflowRepository.findMaxId();
         Long newId = maxId + 1;
 
@@ -48,6 +67,9 @@ public class WorkflowService implements IWorkflowService {
         workflow.setId(newId);
 
         Workflow savedWorkflow = workflowRepository.save(workflow);
+
+        userRepository.createCreatesRelationship(userId, savedWorkflow.getId(), java.time.LocalDate.now().toString());
+
         return mapToDTO(savedWorkflow);
     }
 
@@ -83,7 +105,7 @@ public class WorkflowService implements IWorkflowService {
             );
         }
 
-        workflowRepository.deleteById(id);
+        workflowRepository.deleteWorkflowByCustomId(id);
     }
 
     private WorkflowDTO mapToDTO(Workflow workflow) {
@@ -98,5 +120,10 @@ public class WorkflowService implements IWorkflowService {
         workflow.setId(dto.getId());
         workflow.setName(dto.getName());
         return workflow;
+    }
+
+    @Override
+    public List<WorkflowOfferStatsDTO> getWorkflowOfferStats() {
+        return workflowRepository.getWorkflowOfferStats();
     }
 }

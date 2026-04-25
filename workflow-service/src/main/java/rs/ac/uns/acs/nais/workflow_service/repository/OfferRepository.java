@@ -10,4 +10,10 @@ public interface OfferRepository extends Neo4jRepository<Offer, Long> {
     @Query("MATCH (o:Offer) RETURN coalesce(max(o.id), 0)")
     Long findMaxId();
 
+    @Query("""
+    MATCH (o:Offer {id: $offerId})
+    OPTIONAL MATCH (a:Arrangement)-[r:HAS_OFFER]->(o)
+    DELETE r, o
+    """)
+    void deleteOfferAndRelationships(Long offerId);
 }

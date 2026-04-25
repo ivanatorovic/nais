@@ -2,6 +2,7 @@ package rs.ac.uns.acs.nais.workflow_service.controller;
 
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowOfferStatsDTO;
 import rs.ac.uns.acs.nais.workflow_service.service.IWorkflowService;
 
 import java.util.List;
@@ -27,8 +28,11 @@ public class WorkflowController {
     }
 
     @PostMapping
-    public WorkflowDTO createWorkflow(@RequestBody WorkflowDTO workflowDTO) {
-        return workflowService.createWorkflow(workflowDTO);
+    public WorkflowDTO createWorkflow(
+            @RequestParam Long userId,
+            @RequestBody WorkflowDTO workflowDTO) {
+
+        return workflowService.createWorkflow(userId, workflowDTO);
     }
 
     @PatchMapping("/{id}")
@@ -39,5 +43,10 @@ public class WorkflowController {
     @DeleteMapping("/{id}")
     public void deleteWorkflow(@PathVariable Long id) {
         workflowService.deleteWorkflow(id);
+    }
+
+    @GetMapping("/offer-stats")
+    public List<WorkflowOfferStatsDTO> getWorkflowOfferStats() {
+        return workflowService.getWorkflowOfferStats();
     }
 }

@@ -1,9 +1,7 @@
 package rs.ac.uns.acs.nais.workflow_service.controller;
 
 import org.springframework.web.bind.annotation.*;
-import rs.ac.uns.acs.nais.workflow_service.dto.ArrangementDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.OfferDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.*;
 import rs.ac.uns.acs.nais.workflow_service.service.IArrangementService;
 
 import java.util.List;
@@ -75,4 +73,16 @@ public class ArrangementController {
     public List<OfferDTO> getOffersForArrangement(@PathVariable Long arrangementId) {
         return arrangementService.getOffersForArrangement(arrangementId);
     }
+
+    @GetMapping("/price-analysis")
+    public List<ArrangementPriceDTO> getPriceAnalysis() {
+        return arrangementService.getArrangementPriceAnalysis();
+    }
+
+    @GetMapping("/ratings")
+    public List<ArrangementRatingDTO> getArrangementRatings() {
+        return arrangementService.getArrangementRatings();
+    }
+
+
 }

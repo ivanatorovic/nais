@@ -102,7 +102,7 @@ public class OfferService implements IOfferService {
             );
         }
 
-        offerRepository.deleteById(id);
+        offerRepository.deleteOfferAndRelationships(id);
     }
 
 

@@ -1,6 +1,9 @@
 package rs.ac.uns.acs.nais.workflow_service.controller;
 
+import rs.ac.uns.acs.nais.workflow_service.dto.AdministratorPublishStatsDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.DirectorWorkflowStatsDTO;
 import rs.ac.uns.acs.nais.workflow_service.dto.UserDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.UserWorkflowStatsDTO;
 import rs.ac.uns.acs.nais.workflow_service.model.User;
 import rs.ac.uns.acs.nais.workflow_service.service.IUserService;
 import org.springframework.web.bind.annotation.*;
@@ -73,5 +76,40 @@ public class UserController {
     public void deleteCreatesRelationship(@PathVariable Long userId,
                                           @PathVariable Long workflowId) {
         userService.deleteCreatesRelationship(userId, workflowId);
+    }
+
+    @PostMapping("/{userId}/publishes/{arrangementId}")
+    public User createPublishesRelationship(@PathVariable Long userId, @PathVariable Long arrangementId) {
+        return userService.createPublishesRelationship(userId, arrangementId);
+    }
+
+    @GetMapping("/{userId}/publishes/{arrangementId}")
+    public User findOnePublishesRelationship(@PathVariable Long userId, @PathVariable Long arrangementId) {
+        return userService.findOnePublishesRelationship(userId, arrangementId);
+    }
+
+    @GetMapping("/publishes")
+    public List<User> findAllPublishesRelationships() {
+        return userService.findAllPublishesRelationships();
+    }
+
+    @DeleteMapping("/{userId}/publishes/{arrangementId}")
+    public void deletePublishesRelationship(@PathVariable Long userId, @PathVariable Long arrangementId) {
+        userService.deletePublishesRelationship(userId, arrangementId);
+    }
+
+    @GetMapping("/workflow-stats")
+    public List<UserWorkflowStatsDTO> getUserWorkflowStats() {
+        return userService.getUserWorkflowStats();
+    }
+
+    @GetMapping("/director-workflow-stats")
+    public List<DirectorWorkflowStatsDTO> getDirectorWorkflowStats() {
+        return userService.getDirectorWorkflowStats();
+    }
+
+    @GetMapping("/administrator-publish-stats")
+    public List<AdministratorPublishStatsDTO> getAdministratorPublishStats() {
+        return userService.getAdministratorPublishStats();
     }
 }

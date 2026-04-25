@@ -19,6 +19,9 @@ public class User {
     @Relationship(type = "CREATES")
     private List<Creates> createdWorkflows = new ArrayList<>();
 
+    @Relationship(type = "PUBLISHES")
+    private List<Arrangement> publishedArrangements;
+
 
     public User() {
     }
@@ -68,6 +71,14 @@ public class User {
 
     public void setCreatedWorkflows(List<Creates> createdWorkflows) {
         this.createdWorkflows = createdWorkflows;
+    }
+
+    public List<Arrangement> getPublishedArrangements() {
+        return publishedArrangements;
+    }
+
+    public void setPublishedArrangements(List<Arrangement> publishedArrangements) {
+        this.publishedArrangements = publishedArrangements;
     }
 
 }
