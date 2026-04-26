@@ -3,80 +3,39 @@ package rs.ac.uns.acs.nais.workflow_service.dto;
 public class OfferDTO {
 
     private Long id;
-    private String type;
-    private String value;
-    private String name;
-    private Double rating;
-    private Double adultsPrice;
-    private Double kidsPrice;
+    private String startDate;
+    private String endDate;
+    private Double priceForChildren;
+    private Double priceForAdults;
 
     public OfferDTO() {
     }
 
-    public OfferDTO(Long id, String type, String value, String name,
-                    Double rating, Double adultsPrice, Double kidsPrice) {
+    public OfferDTO(Long id, String startDate, String endDate, Double priceForChildren, Double priceForAdults) {
         this.id = id;
-        this.type = type;
-        this.value = value;
-        this.name = name;
-        this.rating = rating;
-        this.adultsPrice = adultsPrice;
-        this.kidsPrice = kidsPrice;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.priceForChildren = priceForChildren;
+        this.priceForAdults = priceForAdults;
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getType() {
-        return type;
+    public String getStartDate() {
+        return startDate;
     }
 
-    public String getValue() {
-        return value;
+    public String getEndDate() {
+        return endDate;
     }
 
-    public String getName() {
-        return name;
+    public Double getPriceForChildren() {
+        return priceForChildren;
     }
 
-    public Double getRating() {
-        return rating;
-    }
-
-    public Double getAdultsPrice() {
-        return adultsPrice;
-    }
-
-    public Double getKidsPrice() {
-        return kidsPrice;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setRating(Double rating) {
-        this.rating = rating;
-    }
-
-    public void setAdultsPrice(Double adultsPrice) {
-        this.adultsPrice = adultsPrice;
-    }
-
-    public void setKidsPrice(Double kidsPrice) {
-        this.kidsPrice = kidsPrice;
+    public Double getPriceForAdults() {
+        return priceForAdults;
     }
 }

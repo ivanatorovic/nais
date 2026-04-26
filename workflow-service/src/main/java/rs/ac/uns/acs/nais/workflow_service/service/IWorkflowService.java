@@ -1,8 +1,10 @@
 package rs.ac.uns.acs.nais.workflow_service.service;
 
+import rs.ac.uns.acs.nais.workflow_service.dto.CreateWorkflowRequest;
+import rs.ac.uns.acs.nais.workflow_service.dto.CreatesDTO;
 import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowOfferStatsDTO;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface IWorkflowService {
@@ -11,11 +13,21 @@ public interface IWorkflowService {
 
     WorkflowDTO getWorkflowById(Long id);
 
-    WorkflowDTO createWorkflow(Long userId, WorkflowDTO workflowDTO);
+    WorkflowDTO createWorkflow(CreateWorkflowRequest request);
 
     WorkflowDTO updateWorkflow(Long id, WorkflowDTO workflowDTO);
 
     void deleteWorkflow(Long id);
 
-    List<WorkflowOfferStatsDTO> getWorkflowOfferStats();
+    CreatesDTO createCreatesRelationship(Long userId, Long workflowId);
+
+    List<CreatesDTO> getAllCreatesRelationships();
+
+    CreatesDTO getCreatesRelationship(Long userId, Long workflowId);
+
+    CreatesDTO updateCreatesRelationship(Long userId, Long workflowId, LocalDateTime createdAt);
+
+    void deleteCreatesRelationship(Long userId, Long workflowId);
+
+    List<WorkflowDTO> getWorkflowsCreatedByUser(Long userId);
 }

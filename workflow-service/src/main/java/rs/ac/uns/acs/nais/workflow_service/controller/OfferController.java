@@ -1,5 +1,7 @@
 package rs.ac.uns.acs.nais.workflow_service.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rs.ac.uns.acs.nais.workflow_service.dto.OfferDTO;
 import rs.ac.uns.acs.nais.workflow_service.service.IOfferService;
@@ -17,29 +19,30 @@ public class OfferController {
     }
 
     @GetMapping
-    public List<OfferDTO> getAllOffers() {
-        return offerService.getAllOffers();
+    public ResponseEntity<List<OfferDTO>> getAllOffers() {
+        return ResponseEntity.ok(offerService.getAllOffers());
     }
 
     @GetMapping("/{id}")
-    public OfferDTO getOfferById(@PathVariable Long id) {
-        return offerService.getOfferById(id);
+    public ResponseEntity<OfferDTO> getOfferById(@PathVariable Long id) {
+        return ResponseEntity.ok(offerService.getOfferById(id));
     }
 
     @PostMapping
-    public OfferDTO createOffer(@RequestBody OfferDTO offerDTO) {
-        return offerService.createOffer(offerDTO);
+    public ResponseEntity<OfferDTO> createOffer(@RequestBody OfferDTO offerDTO) {
+        OfferDTO createdOffer = offerService.createOffer(offerDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOffer);
     }
 
     @PatchMapping("/{id}")
-    public OfferDTO updateOffer(@PathVariable Long id, @RequestBody OfferDTO offerDTO) {
-        return offerService.updateOffer(id, offerDTO);
+    public ResponseEntity<OfferDTO> updateOffer(@PathVariable Long id,
+                                                @RequestBody OfferDTO offerDTO) {
+        return ResponseEntity.ok(offerService.updateOffer(id, offerDTO));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteOffer(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteOffer(@PathVariable Long id) {
         offerService.deleteOffer(id);
+        return ResponseEntity.noContent().build();
     }
-
-
 }

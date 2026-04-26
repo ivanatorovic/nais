@@ -3,12 +3,18 @@ package rs.ac.uns.acs.nais.workflow_service.service.impl;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import rs.ac.uns.acs.nais.workflow_service.dto.*;
+import rs.ac.uns.acs.nais.workflow_service.dto.ArrangementDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.OfferDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowDTO;
 import rs.ac.uns.acs.nais.workflow_service.model.Arrangement;
 import rs.ac.uns.acs.nais.workflow_service.model.Offer;
+import rs.ac.uns.acs.nais.workflow_service.model.Workflow;
 import rs.ac.uns.acs.nais.workflow_service.repository.ArrangementRepository;
+import rs.ac.uns.acs.nais.workflow_service.repository.OfferRepository;
+import rs.ac.uns.acs.nais.workflow_service.repository.WorkflowRepository;
 import rs.ac.uns.acs.nais.workflow_service.service.IArrangementService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,16 +22,22 @@ import java.util.stream.Collectors;
 public class ArrangementService implements IArrangementService {
 
     private final ArrangementRepository arrangementRepository;
+    private final WorkflowRepository workflowRepository;
+    private final OfferRepository offerRepository;
 
-    public ArrangementService(ArrangementRepository arrangementRepository) {
+    public ArrangementService(ArrangementRepository arrangementRepository,
+                              WorkflowRepository workflowRepository,
+                              OfferRepository offerRepository) {
         this.arrangementRepository = arrangementRepository;
+        this.workflowRepository = workflowRepository;
+        this.offerRepository = offerRepository;
     }
 
     @Override
     public List<ArrangementDTO> getAllArrangements() {
         return arrangementRepository.findAll()
                 .stream()
-                .map(this::mapToBasicDTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -37,21 +49,23 @@ public class ArrangementService implements IArrangementService {
                         "Arrangement not found with id: " + id
                 ));
 
-        return mapToBasicDTO(arrangement);
+        return mapToDTO(arrangement);
     }
 
     @Override
     public ArrangementDTO createArrangement(ArrangementDTO arrangementDTO) {
-        Long maxId = arrangementRepository.findMaxId();
-        Long newId = maxId + 1;
+        Long newId = arrangementRepository.findMaxId() + 1;
 
-        Arrangement arrangement = mapToEntity(arrangementDTO);
+        Arrangement arrangement = new Arrangement();
         arrangement.setId(newId);
+        arrangement.setName(arrangementDTO.getName());
+        arrangement.setDescription(arrangementDTO.getDescription());
+        arrangement.setDestination(arrangementDTO.getDestination());
 
         Arrangement savedArrangement = arrangementRepository.save(arrangement);
-        return mapToBasicDTO(savedArrangement);
-    }
 
+        return mapToDTO(savedArrangement);
+    }
 
     @Override
     public ArrangementDTO updateArrangement(Long id, ArrangementDTO arrangementDTO) {
@@ -68,30 +82,14 @@ public class ArrangementService implements IArrangementService {
             );
         }
 
-        if (arrangementDTO.getName() != null) {
-            existingArrangement.setName(arrangementDTO.getName());
-        }
-
-        if (arrangementDTO.getDestination() != null) {
-            existingArrangement.setDestination(arrangementDTO.getDestination());
-        }
-
-        if (arrangementDTO.getDescription() != null) {
-            existingArrangement.setDescription(arrangementDTO.getDescription());
-        }
-
-        if (arrangementDTO.getStartDate() != null) {
-            existingArrangement.setStartDate(arrangementDTO.getStartDate());
-        }
-
-        if (arrangementDTO.getEndDate() != null) {
-            existingArrangement.setEndDate(arrangementDTO.getEndDate());
-        }
+        existingArrangement.setName(arrangementDTO.getName());
+        existingArrangement.setDescription(arrangementDTO.getDescription());
+        existingArrangement.setDestination(arrangementDTO.getDestination());
 
         Arrangement updatedArrangement = arrangementRepository.save(existingArrangement);
-        return mapToBasicDTO(updatedArrangement);
-    }
 
+        return mapToDTO(updatedArrangement);
+    }
 
     @Override
     public void deleteArrangement(Long id) {
@@ -102,53 +100,76 @@ public class ArrangementService implements IArrangementService {
             );
         }
 
-        arrangementRepository.deleteArrangementByCustomId(id);
+        arrangementRepository.deleteById(id);
     }
 
-
-    private ArrangementDTO mapToBasicDTO(Arrangement arrangement) {
-        ArrangementDTO dto = new ArrangementDTO();
-        dto.setId(arrangement.getId());
-        dto.setName(arrangement.getName());
-        dto.setDestination(arrangement.getDestination());
-        dto.setDescription(arrangement.getDescription());
-        dto.setStartDate(arrangement.getStartDate());
-        dto.setEndDate(arrangement.getEndDate());
-        return dto;
-    }
-
-
-
-    private Arrangement mapToEntity(ArrangementDTO dto) {
-        Arrangement arrangement = new Arrangement();
-        arrangement.setId(dto.getId());
-        arrangement.setName(dto.getName());
-        arrangement.setDestination(dto.getDestination());
-        arrangement.setDescription(dto.getDescription());
-        arrangement.setStartDate(dto.getStartDate());
-        arrangement.setEndDate(dto.getEndDate());
-        return arrangement;
+    private ArrangementDTO mapToDTO(Arrangement arrangement) {
+        return new ArrangementDTO(
+                arrangement.getId(),
+                arrangement.getName(),
+                arrangement.getDescription(),
+                arrangement.getDestination()
+        );
     }
 
     @Override
-    public ArrangementDTO createBasedOnRelationship(Long arrangementId, Long workflowId) {
-        Arrangement arrangement = arrangementRepository.createBasedOnRelationship(arrangementId, workflowId);
-
-        if (arrangement == null) {
+    public ArrangementDTO setBasedOnWorkflow(Long arrangementId, Long workflowId) {
+        if (!arrangementRepository.existsById(arrangementId)) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
-                    "Arrangement or Workflow not found."
+                    "Arrangement not found with id: " + arrangementId
             );
         }
 
-        if (arrangementRepository.existsBasedOnRelationship(arrangementId)) {
+        if (!workflowRepository.existsById(workflowId)) {
             throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Arrangement already has a workflow."
+                    HttpStatus.NOT_FOUND,
+                    "Workflow not found with id: " + workflowId
             );
         }
 
-        return mapToBasicDTO(arrangement);
+        Arrangement arrangement = arrangementRepository.createOrUpdateBasedOnRelationship(
+                arrangementId,
+                workflowId
+        );
+
+        return mapToDTO(arrangement);
+    }
+
+    @Override
+    public WorkflowDTO getWorkflowForArrangement(Long arrangementId) {
+        if (!arrangementRepository.existsById(arrangementId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Arrangement not found with id: " + arrangementId
+            );
+        }
+
+        Workflow workflow = arrangementRepository.getWorkflowForArrangement(arrangementId);
+
+        if (workflow == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Arrangement does not have BASED_ON workflow"
+            );
+        }
+
+        return mapWorkflowToDTO(workflow);
+    }
+
+    @Override
+    public List<ArrangementDTO> getArrangementsByWorkflow(Long workflowId) {
+        if (!workflowRepository.existsById(workflowId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Workflow not found with id: " + workflowId
+            );
+        }
+
+        return arrangementRepository.getArrangementsByWorkflow(workflowId)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -160,123 +181,73 @@ public class ArrangementService implements IArrangementService {
             );
         }
 
-        if (!arrangementRepository.existsBasedOnRelationship(arrangementId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "BASED_ON relationship not found for arrangement with id: " + arrangementId
-            );
-        }
-
         arrangementRepository.deleteBasedOnRelationship(arrangementId);
     }
 
-    @Override
-    public WorkflowDTO getWorkflowForArrangement(Long arrangementId) {
-        Arrangement arrangement = arrangementRepository.findArrangementWithWorkflow(arrangementId);
-
-        if (arrangement == null || arrangement.getWorkflow() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Arrangement or BASED_ON relationship not found."
-            );
-        }
-
-        WorkflowDTO dto = new WorkflowDTO();
-        dto.setId(arrangement.getWorkflow().getId());
-        dto.setName(arrangement.getWorkflow().getName());
-        return dto;
+    private WorkflowDTO mapWorkflowToDTO(Workflow workflow) {
+        return new WorkflowDTO(
+                workflow.getId(),
+                workflow.getName()
+        );
     }
 
     @Override
     public ArrangementDTO addOfferToArrangement(Long arrangementId, Long offerId) {
-        if (!arrangementRepository.existsById(arrangementId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Arrangement not found with id: " + arrangementId
-            );
+
+        Arrangement arrangement = arrangementRepository.findById(arrangementId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Arrangement not found"));
+
+        Offer offer = offerRepository.findById(offerId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Offer not found"));
+
+        if (arrangement.getOffers() == null) {
+            arrangement.setOffers(new ArrayList<>());
         }
 
-        if (arrangementRepository.existsOfferOfSameTypeForArrangement(arrangementId, offerId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Arrangement already has an offer of this type."
-            );
-        }
+        arrangement.getOffers().add(offer);
 
-        Arrangement arrangement = arrangementRepository.addOfferToArrangement(arrangementId, offerId);
+        Arrangement saved = arrangementRepository.save(arrangement);
 
-        if (arrangement == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Arrangement or Offer not found."
-            );
-        }
-
-        return mapToBasicDTO(arrangement);
-    }
-
-    @Override
-    public void deleteOfferFromArrangement(Long arrangementId, Long offerId) {
-        if (!arrangementRepository.existsById(arrangementId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Arrangement not found with id: " + arrangementId
-            );
-        }
-
-        if (!arrangementRepository.existsHasOfferRelationshipForArrangement(arrangementId, offerId)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "HAS_OFFER relationship not found for arrangementId: "
-                            + arrangementId + " and offerId: " + offerId
-            );
-        }
-
-        arrangementRepository.deleteOfferFromArrangement(arrangementId, offerId);
+        return mapToDTO(saved);
     }
 
     @Override
     public List<OfferDTO> getOffersForArrangement(Long arrangementId) {
-        Arrangement arrangement = arrangementRepository.findArrangementWithOffers(arrangementId);
 
-        if (arrangement == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Arrangement or HAS_OFFER relationship not found."
-            );
+        if (!arrangementRepository.existsById(arrangementId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Arrangement not found");
         }
 
-        if (arrangement.getOffers() == null) {
-            return List.of();
-        }
-
-        return arrangement.getOffers().stream()
-                .map(this::mapOfferToDTO)
+        return arrangementRepository.getOffersForArrangement(arrangementId)
+                .stream()
+                .map(o -> new OfferDTO(
+                        o.getId(),
+                        o.getStartDate(),
+                        o.getEndDate(),
+                        o.getPriceForChildren(),
+                        o.getPriceForAdults()
+                ))
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public ArrangementDTO getArrangementForOffer(Long offerId) {
 
-    private OfferDTO mapOfferToDTO(Offer offer) {
-        OfferDTO dto = new OfferDTO();
-        dto.setId(offer.getId());
-        dto.setName(offer.getName());
-        dto.setType(offer.getType().name());
-        dto.setValue(offer.getValue());
-        dto.setRating(offer.getRating());
-        dto.setAdultsPrice(offer.getAdultsPrice());
-        dto.setKidsPrice(offer.getKidsPrice());
-        return dto;
+        if (!offerRepository.existsById(offerId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Offer not found");
+        }
+
+        Arrangement a = arrangementRepository.getArrangementForOffer(offerId);
+
+        return mapToDTO(a);
     }
 
     @Override
-    public List<ArrangementPriceDTO> getArrangementPriceAnalysis() {
-        return arrangementRepository.getArrangementPriceAnalysis();
-    }
+    public void removeOfferFromArrangement(Long arrangementId, Long offerId) {
 
-    @Override
-    public List<ArrangementRatingDTO> getArrangementRatings() {
-        return arrangementRepository.getArrangementRatings();
+        arrangementRepository.removeOfferFromArrangement(arrangementId, offerId);
     }
-
 
 }

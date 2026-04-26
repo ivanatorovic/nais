@@ -2,9 +2,9 @@ package rs.ac.uns.acs.nais.workflow_service.model;
 
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
-import java.util.List;
-import java.util.ArrayList;
 import org.springframework.data.neo4j.core.schema.Relationship;
+
+import java.util.List;
 
 @Node("User")
 public class User {
@@ -16,12 +16,8 @@ public class User {
     private String lastName;
     private Role role;
 
-    @Relationship(type = "CREATES")
-    private List<Creates> createdWorkflows = new ArrayList<>();
-
-    @Relationship(type = "PUBLISHES")
-    private List<Arrangement> publishedArrangements;
-
+    @Relationship(type = "CREATES", direction = Relationship.Direction.OUTGOING)
+    private List<Creates> createdWorkflows;
 
     public User() {
     }
@@ -37,48 +33,31 @@ public class User {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getFirstName() {
         return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
     public Role getRole() {
         return role;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public void setRole(Role role) {
         this.role = role;
     }
-
-    public List<Creates> getCreatedWorkflows() {
-        return createdWorkflows;
-    }
-
-    public void setCreatedWorkflows(List<Creates> createdWorkflows) {
-        this.createdWorkflows = createdWorkflows;
-    }
-
-    public List<Arrangement> getPublishedArrangements() {
-        return publishedArrangements;
-    }
-
-    public void setPublishedArrangements(List<Arrangement> publishedArrangements) {
-        this.publishedArrangements = publishedArrangements;
-    }
-
 }

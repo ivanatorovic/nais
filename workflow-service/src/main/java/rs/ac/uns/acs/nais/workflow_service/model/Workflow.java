@@ -11,7 +11,8 @@ public class Workflow {
 
     private String name;
 
-    public Workflow() {}
+    public Workflow() {
+    }
 
     public Workflow(Long id, String name) {
         this.id = id;
@@ -22,12 +23,12 @@ public class Workflow {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setName(String name) {

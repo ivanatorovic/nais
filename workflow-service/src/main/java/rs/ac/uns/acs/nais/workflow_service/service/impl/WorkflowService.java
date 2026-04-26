@@ -3,8 +3,9 @@ package rs.ac.uns.acs.nais.workflow_service.service.impl;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import rs.ac.uns.acs.nais.workflow_service.dto.CreateWorkflowRequest;
+import rs.ac.uns.acs.nais.workflow_service.dto.CreatesDTO;
 import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowOfferStatsDTO;
 import rs.ac.uns.acs.nais.workflow_service.model.Role;
 import rs.ac.uns.acs.nais.workflow_service.model.User;
 import rs.ac.uns.acs.nais.workflow_service.model.Workflow;
@@ -12,6 +13,7 @@ import rs.ac.uns.acs.nais.workflow_service.repository.UserRepository;
 import rs.ac.uns.acs.nais.workflow_service.repository.WorkflowRepository;
 import rs.ac.uns.acs.nais.workflow_service.service.IWorkflowService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,36 +48,41 @@ public class WorkflowService implements IWorkflowService {
     }
 
     @Override
-    public WorkflowDTO createWorkflow(Long userId, WorkflowDTO workflowDTO) {
-        User user = userRepository.findById(userId)
+    public WorkflowDTO createWorkflow(CreateWorkflowRequest request) {
+        User creator = userRepository.findById(request.getCreatorId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "User not found with id: " + userId
+                        "User not found with id: " + request.getCreatorId()
                 ));
 
-        if (user.getRole() != Role.ADMINISTRATOR) {
+        if (creator.getRole() != Role.ADMINISTRATOR) {
             throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Only ADMINISTRATOR can create workflows."
+                    HttpStatus.BAD_REQUEST,
+                    "Only administrator can create workflow."
             );
         }
 
         Long maxId = workflowRepository.findMaxId();
         Long newId = maxId + 1;
 
-        Workflow workflow = mapToEntity(workflowDTO);
+        Workflow workflow = new Workflow();
         workflow.setId(newId);
+        workflow.setName(request.getName());
 
         Workflow savedWorkflow = workflowRepository.save(workflow);
 
-        userRepository.createCreatesRelationship(userId, savedWorkflow.getId(), java.time.LocalDate.now().toString());
+        workflowRepository.createCreatesRelationship(
+                creator.getId(),
+                savedWorkflow.getId(),
+                LocalDateTime.now()
+        );
 
         return mapToDTO(savedWorkflow);
     }
 
     @Override
     public WorkflowDTO updateWorkflow(Long id, WorkflowDTO workflowDTO) {
-        Workflow existing = workflowRepository.findById(id)
+        Workflow existingWorkflow = workflowRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Workflow not found with id: " + id
@@ -89,10 +96,10 @@ public class WorkflowService implements IWorkflowService {
         }
 
         if (workflowDTO.getName() != null) {
-            existing.setName(workflowDTO.getName());
+            existingWorkflow.setName(workflowDTO.getName());
         }
 
-        Workflow updatedWorkflow = workflowRepository.save(existing);
+        Workflow updatedWorkflow = workflowRepository.save(existingWorkflow);
         return mapToDTO(updatedWorkflow);
     }
 
@@ -108,22 +115,114 @@ public class WorkflowService implements IWorkflowService {
         workflowRepository.deleteWorkflowByCustomId(id);
     }
 
+    @Override
+    public CreatesDTO createCreatesRelationship(Long userId, Long workflowId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found with id: " + userId
+                ));
+
+        if (workflowRepository.workflowAlreadyHasCreator(workflowId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Workflow already has an administrator."
+            );
+        }
+
+        if (user.getRole() != Role.ADMINISTRATOR) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Only administrator can create CREATES relationship."
+            );
+        }
+
+        if (!workflowRepository.existsById(workflowId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Workflow not found with id: " + workflowId
+            );
+        }
+
+        if (workflowRepository.existsCreatesRelationship(userId, workflowId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "CREATES relationship already exists."
+            );
+        }
+
+        LocalDateTime createdAt = LocalDateTime.now();
+
+        workflowRepository.createCreatesRelationship(userId, workflowId, createdAt);
+
+        return new CreatesDTO(userId, workflowId, createdAt);
+    }
+
+    @Override
+    public List<CreatesDTO> getAllCreatesRelationships() {
+        return workflowRepository.getAllCreatesRelationships();
+    }
+
+    @Override
+    public CreatesDTO getCreatesRelationship(Long userId, Long workflowId) {
+        CreatesDTO relationship =
+                workflowRepository.getCreatesRelationship(userId, workflowId);
+
+        if (relationship == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "CREATES relationship not found."
+            );
+        }
+
+        return relationship;
+    }
+
+    @Override
+    public CreatesDTO updateCreatesRelationship(Long userId, Long workflowId, LocalDateTime createdAt) {
+        if (!workflowRepository.existsCreatesRelationship(userId, workflowId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "CREATES relationship not found."
+            );
+        }
+
+        workflowRepository.updateCreatesRelationship(userId, workflowId, createdAt);
+
+        return new CreatesDTO(userId, workflowId, createdAt);
+    }
+
+    @Override
+    public void deleteCreatesRelationship(Long userId, Long workflowId) {
+        if (!workflowRepository.existsCreatesRelationship(userId, workflowId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "CREATES relationship not found."
+            );
+        }
+
+        workflowRepository.deleteCreatesRelationship(userId, workflowId);
+    }
+
+    @Override
+    public List<WorkflowDTO> getWorkflowsCreatedByUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User not found with id: " + userId
+            );
+        }
+
+        return workflowRepository.getWorkflowsCreatedByUser(userId)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
     private WorkflowDTO mapToDTO(Workflow workflow) {
         WorkflowDTO dto = new WorkflowDTO();
         dto.setId(workflow.getId());
         dto.setName(workflow.getName());
         return dto;
-    }
-
-    private Workflow mapToEntity(WorkflowDTO dto) {
-        Workflow workflow = new Workflow();
-        workflow.setId(dto.getId());
-        workflow.setName(dto.getName());
-        return workflow;
-    }
-
-    @Override
-    public List<WorkflowOfferStatsDTO> getWorkflowOfferStats() {
-        return workflowRepository.getWorkflowOfferStats();
     }
 }

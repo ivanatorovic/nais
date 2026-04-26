@@ -1,6 +1,8 @@
 package rs.ac.uns.acs.nais.workflow_service.service;
 
-import rs.ac.uns.acs.nais.workflow_service.dto.*;
+import rs.ac.uns.acs.nais.workflow_service.dto.ArrangementDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.OfferDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowDTO;
 
 import java.util.List;
 
@@ -16,21 +18,19 @@ public interface IArrangementService {
 
     void deleteArrangement(Long id);
 
-    ArrangementDTO createBasedOnRelationship(Long arrangementId, Long workflowId);
-
-    void deleteBasedOnRelationship(Long arrangementId);
+    ArrangementDTO setBasedOnWorkflow(Long arrangementId, Long workflowId);
 
     WorkflowDTO getWorkflowForArrangement(Long arrangementId);
 
-    ArrangementDTO addOfferToArrangement(Long arrangementId, Long offerId);
+    List<ArrangementDTO> getArrangementsByWorkflow(Long workflowId);
 
-    void deleteOfferFromArrangement(Long arrangementId, Long offerId);
+    void deleteBasedOnRelationship(Long arrangementId);
+
+    ArrangementDTO addOfferToArrangement(Long arrangementId, Long offerId);
 
     List<OfferDTO> getOffersForArrangement(Long arrangementId);
 
-    List<ArrangementPriceDTO> getArrangementPriceAnalysis();
+    ArrangementDTO getArrangementForOffer(Long offerId);
 
-    List<ArrangementRatingDTO> getArrangementRatings();
-
-
+    void removeOfferFromArrangement(Long arrangementId, Long offerId);
 }
