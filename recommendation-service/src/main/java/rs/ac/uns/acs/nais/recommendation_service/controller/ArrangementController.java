@@ -47,7 +47,7 @@ public class ArrangementController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<ArrangementResponse> update(@PathVariable Long id,
                                                       @RequestBody UpdateArrangementRequest request) {
 
@@ -62,9 +62,10 @@ public class ArrangementController {
     }
 
     @PostMapping("/{arrangementId}/tags/{tagId}")
-    public ResponseEntity<Arrangement> addTagToArrangement(@PathVariable Long arrangementId,
-                                                           @PathVariable Long tagId) {
-        return ResponseEntity.ok(arrangementService.addTagToArrangement(arrangementId, tagId));
+    public ResponseEntity<Void> addTagToArrangement(@PathVariable Long arrangementId,
+                                                    @PathVariable Long tagId) {
+        arrangementService.addTagToArrangement(arrangementId, tagId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{arrangementId}/tags/{tagId}")
@@ -80,9 +81,10 @@ public class ArrangementController {
     }
 
     @PostMapping("/{arrangementId}/destination/{destinationId}")
-    public ResponseEntity<Arrangement> setArrangementLocation(@PathVariable Long arrangementId,
-                                                              @PathVariable Long destinationId) {
-        return ResponseEntity.ok(arrangementService.setArrangementLocation(arrangementId, destinationId));
+    public ResponseEntity<Void> setArrangementLocation(@PathVariable Long arrangementId,
+                                                       @PathVariable Long destinationId) {
+        arrangementService.setArrangementLocation(arrangementId, destinationId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{arrangementId}/destination")

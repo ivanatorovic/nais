@@ -16,20 +16,27 @@ public class Booked {
     private String bookingDate;
     private Integer persons;
     private Double totalPrice;
+    private Integer count;
 
     public Booked() {
     }
 
-    public Booked(Long id, Arrangement arrangement, String bookingDate, Integer persons, Double totalPrice) {
+    public Booked(Long id, Arrangement arrangement, String bookingDate,
+                  Integer persons, Double totalPrice, Integer count) {
         this.id = id;
         this.arrangement = arrangement;
         this.bookingDate = bookingDate;
         this.persons = persons;
         this.totalPrice = totalPrice;
+        this.count = count;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Arrangement getArrangement() {
@@ -38,10 +45,6 @@ public class Booked {
 
     public void setArrangement(Arrangement arrangement) {
         this.arrangement = arrangement;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getBookingDate() {
@@ -67,4 +70,13 @@ public class Booked {
     public void setTotalPrice(Double totalPrice) {
         this.totalPrice = totalPrice;
     }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
+    }
+
 }

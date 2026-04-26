@@ -45,7 +45,7 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<UserResponse> update(@PathVariable Long id,
                                                @RequestBody UserUpdateRequest request) {
         User updated = userService.update(id, request);
@@ -58,10 +58,14 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
     @PostMapping("/viewed")
-    public ResponseEntity<User> addOrUpdateViewed(@RequestBody ViewedRequestDTO dto) {
-        return ResponseEntity.ok(
-                userService.addOrUpdateViewed(dto.getUserId(), dto.getArrangementId(), dto.getViewedAt())
+    public ResponseEntity<Void> addOrUpdateViewed(@RequestBody ViewedRequestDTO dto) {
+        userService.addOrUpdateViewed(
+                dto.getUserId(),
+                dto.getArrangementId(),
+                dto.getViewedAt()
         );
+
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/viewed")
@@ -71,21 +75,21 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/viewed")
-    public ResponseEntity<User> getViewedRelationships(@PathVariable Long userId) {
+    public ResponseEntity<List<ViewedArrangementResponse>> getViewedRelationships(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.findUserWithViewedRelationships(userId));
     }
 
     @PostMapping("/booked")
-    public ResponseEntity<User> addOrUpdateBooked(@RequestBody BookedRequestDTO dto) {
-        return ResponseEntity.ok(
-                userService.addOrUpdateBooked(
-                        dto.getUserId(),
-                        dto.getArrangementId(),
-                        dto.getBookingDate(),
-                        dto.getPersons(),
-                        dto.getTotalPrice()
-                )
+    public ResponseEntity<Void> addOrUpdateBooked(@RequestBody BookedRequestDTO dto) {
+        userService.addOrUpdateBooked(
+                dto.getUserId(),
+                dto.getArrangementId(),
+                dto.getBookingDate(),
+                dto.getPersons(),
+                dto.getTotalPrice()
         );
+
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/booked")
@@ -95,7 +99,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/booked")
-    public ResponseEntity<User> getBookedRelationships(@PathVariable Long userId) {
+    public ResponseEntity< List<BookedArrangementResponse>> getBookedRelationships(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.findUserWithBookedRelationships(userId));
     }
 

@@ -80,7 +80,7 @@ public interface ArrangementRepository extends Neo4jRepository<Arrangement, Long
            a2.price AS price,
            a2.durationDays AS durationDays
     ORDER BY similarity DESC
-    LIMIT 5
+    LIMIT 3
 """)
     List<ArrangementRecommendationDto> findSimilarArrangements(@Param("arrangementId") Long arrangementId);
 }

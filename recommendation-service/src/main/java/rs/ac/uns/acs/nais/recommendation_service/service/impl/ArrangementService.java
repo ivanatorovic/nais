@@ -7,8 +7,11 @@ import rs.ac.uns.acs.nais.recommendation_service.dto.ArrangementRecommendationDt
 import rs.ac.uns.acs.nais.recommendation_service.dto.UpdateArrangementRequest;
 import rs.ac.uns.acs.nais.recommendation_service.model.Arrangement;
 import rs.ac.uns.acs.nais.recommendation_service.repository.ArrangementRepository;
+import rs.ac.uns.acs.nais.recommendation_service.repository.DestinationRepository;
+import rs.ac.uns.acs.nais.recommendation_service.repository.TagRepository;
 import rs.ac.uns.acs.nais.recommendation_service.service.IArrangementService;
 
+import javax.print.attribute.standard.Destination;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,12 +19,16 @@ import java.util.Optional;
 public class ArrangementService implements IArrangementService {
 
     private final ArrangementRepository arrangementRepository;
+    private final TagRepository tagRepository;
+    private final DestinationRepository destinationRepository;
 
-    public ArrangementService(ArrangementRepository arrangementRepository) {
+    public ArrangementService(ArrangementRepository arrangementRepository, TagRepository tagRepository, DestinationRepository destinationRepository) {
         this.arrangementRepository = arrangementRepository;
+        this.tagRepository = tagRepository;
+        this.destinationRepository = destinationRepository;
     }
 
-    // ===================== CREATE =====================
+
     @Override
     public Arrangement save(Arrangement arrangement) {
         if (arrangementRepository.existsById(arrangement.getId())) {
@@ -44,24 +51,34 @@ public class ArrangementService implements IArrangementService {
         return arrangementRepository.findById(id);
     }
 
-    // ===================== UPDATE =====================
     @Override
-    public Arrangement update(Long id, UpdateArrangementRequest arrangement) {
+    public Arrangement update(Long id, UpdateArrangementRequest request) {
         Arrangement existing = arrangementRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Arrangement not found with id: " + id
                 ));
 
-        existing.setName(arrangement.getName());
-        existing.setDescription(arrangement.getDescription());
-        existing.setPrice(arrangement.getPrice());
-        existing.setDurationDays(arrangement.getDurationDays());
+        if (request.getName() != null) {
+            existing.setName(request.getName());
+        }
+
+        if (request.getDescription() != null) {
+            existing.setDescription(request.getDescription());
+        }
+
+        if (request.getPrice() != null) {
+            existing.setPrice(request.getPrice());
+        }
+
+        if (request.getDurationDays() != null) {
+            existing.setDurationDays(request.getDurationDays());
+        }
 
         return arrangementRepository.save(existing);
     }
 
-    // ===================== DELETE =====================
+
     @Override
     public void delete(Long id) {
         if (!arrangementRepository.existsById(id)) {
@@ -74,13 +91,20 @@ public class ArrangementService implements IArrangementService {
         arrangementRepository.deleteArrangementById(id);
     }
 
-    // ===================== TAG =====================
+
     @Override
     public Arrangement addTagToArrangement(Long arrangementId, Long tagId) {
         if (!arrangementRepository.existsById(arrangementId)) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     "Arrangement not found with id: " + arrangementId
+            );
+        }
+
+        if (!tagRepository.existsById(tagId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Tag not found with id: " + tagId
             );
         }
 
@@ -93,6 +117,12 @@ public class ArrangementService implements IArrangementService {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     "Arrangement not found with id: " + arrangementId
+            );
+        }
+        if (!tagRepository.existsById(tagId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Tag not found with id: " + tagId
             );
         }
 
@@ -113,13 +143,19 @@ public class ArrangementService implements IArrangementService {
         return result;
     }
 
-    // ===================== DESTINATION =====================
+
     @Override
     public Arrangement setArrangementLocation(Long arrangementId, Long destinationId) {
         if (!arrangementRepository.existsById(arrangementId)) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     "Arrangement not found with id: " + arrangementId
+            );
+        }
+        if (!destinationRepository.existsById(destinationId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "destination not found with id: " + destinationId
             );
         }
 
@@ -152,7 +188,7 @@ public class ArrangementService implements IArrangementService {
         return result;
     }
 
-    // ===================== RECOMMENDATION =====================
+
     @Override
     public List<ArrangementRecommendationDto> findSimilarArrangements(Long arrangementId) {
         if (!arrangementRepository.existsById(arrangementId)) {

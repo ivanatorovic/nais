@@ -36,9 +36,10 @@ public class DestinationController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Destination> update(@PathVariable Long id, @RequestBody DestinationRequest destination) {
-        return ResponseEntity.ok(destinationService.update(id, destination));
+    @PatchMapping("/{id}")
+    public ResponseEntity<Destination> update(@PathVariable Long id,
+                                              @RequestBody DestinationRequest request) {
+        return ResponseEntity.ok(destinationService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
