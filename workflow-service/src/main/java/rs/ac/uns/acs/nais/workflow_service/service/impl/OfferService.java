@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import rs.ac.uns.acs.nais.workflow_service.dto.OfferDTO;
 import rs.ac.uns.acs.nais.workflow_service.model.Offer;
-import rs.ac.uns.acs.nais.workflow_service.model.OfferType;
 import rs.ac.uns.acs.nais.workflow_service.repository.OfferRepository;
 import rs.ac.uns.acs.nais.workflow_service.service.IOfferService;
 
@@ -42,18 +41,23 @@ public class OfferService implements IOfferService {
 
     @Override
     public OfferDTO createOffer(OfferDTO offerDTO) {
-        Long maxId = offerRepository.findMaxId();
-        Long newId = maxId + 1;
+        Long newId = offerRepository.findMaxId() + 1;
 
-        Offer offer = mapToEntity(offerDTO);
+        Offer offer = new Offer();
         offer.setId(newId);
+        offer.setStartDate(offerDTO.getStartDate());
+        offer.setEndDate(offerDTO.getEndDate());
+        offer.setPriceForChildren(offerDTO.getPriceForChildren());
+        offer.setPriceForAdults(offerDTO.getPriceForAdults());
 
-        return mapToDTO(offerRepository.save(offer));
+        Offer savedOffer = offerRepository.save(offer);
+
+        return mapToDTO(savedOffer);
     }
 
     @Override
     public OfferDTO updateOffer(Long id, OfferDTO offerDTO) {
-        Offer existing = offerRepository.findById(id)
+        Offer existingOffer = offerRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Offer not found with id: " + id
@@ -66,31 +70,25 @@ public class OfferService implements IOfferService {
             );
         }
 
-        if (offerDTO.getType() != null) {
-            existing.setType(OfferType.valueOf(offerDTO.getType().toUpperCase()));
+        if (offerDTO.getStartDate() != null) {
+            existingOffer.setStartDate(offerDTO.getStartDate());
         }
 
-        if (offerDTO.getValue() != null) {
-            existing.setValue(offerDTO.getValue());
+        if (offerDTO.getEndDate() != null) {
+            existingOffer.setEndDate(offerDTO.getEndDate());
         }
 
-        if (offerDTO.getName() != null) {
-            existing.setName(offerDTO.getName());
+        if (offerDTO.getPriceForChildren() != null) {
+            existingOffer.setPriceForChildren(offerDTO.getPriceForChildren());
         }
 
-        if (offerDTO.getRating() != null) {
-            existing.setRating(offerDTO.getRating());
+        if (offerDTO.getPriceForAdults() != null) {
+            existingOffer.setPriceForAdults(offerDTO.getPriceForAdults());
         }
 
-        if (offerDTO.getAdultsPrice() != null) {
-            existing.setAdultsPrice(offerDTO.getAdultsPrice());
-        }
+        Offer updatedOffer = offerRepository.save(existingOffer);
 
-        if (offerDTO.getKidsPrice() != null) {
-            existing.setKidsPrice(offerDTO.getKidsPrice());
-        }
-
-        return mapToDTO(offerRepository.save(existing));
+        return mapToDTO(updatedOffer);
     }
 
     @Override
@@ -102,32 +100,16 @@ public class OfferService implements IOfferService {
             );
         }
 
-        offerRepository.deleteOfferAndRelationships(id);
+        offerRepository.deleteById(id);
     }
-
 
     private OfferDTO mapToDTO(Offer offer) {
-        OfferDTO dto = new OfferDTO();
-        dto.setId(offer.getId());
-        dto.setType(offer.getType().name());
-        dto.setValue(offer.getValue());
-        dto.setName(offer.getName());
-        dto.setRating(offer.getRating());
-        dto.setAdultsPrice(offer.getAdultsPrice());
-        dto.setKidsPrice(offer.getKidsPrice());
-        return dto;
+        return new OfferDTO(
+                offer.getId(),
+                offer.getStartDate(),
+                offer.getEndDate(),
+                offer.getPriceForChildren(),
+                offer.getPriceForAdults()
+        );
     }
-
-    private Offer mapToEntity(OfferDTO dto) {
-        Offer offer = new Offer();
-        offer.setId(dto.getId());
-        offer.setType(OfferType.valueOf(dto.getType().toUpperCase()));
-        offer.setValue(dto.getValue());
-        offer.setName(dto.getName());
-        offer.setRating(dto.getRating());
-        offer.setAdultsPrice(dto.getAdultsPrice());
-        offer.setKidsPrice(dto.getKidsPrice());
-        return offer;
-    }
-
 }

@@ -1,7 +1,11 @@
 package rs.ac.uns.acs.nais.workflow_service.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import rs.ac.uns.acs.nais.workflow_service.dto.*;
+import rs.ac.uns.acs.nais.workflow_service.dto.ArrangementDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.OfferDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.WorkflowDTO;
 import rs.ac.uns.acs.nais.workflow_service.service.IArrangementService;
 
 import java.util.List;
@@ -17,72 +21,75 @@ public class ArrangementController {
     }
 
     @GetMapping
-    public List<ArrangementDTO> getAllArrangements() {
-        return arrangementService.getAllArrangements();
+    public ResponseEntity<List<ArrangementDTO>> getAllArrangements() {
+        return ResponseEntity.ok(arrangementService.getAllArrangements());
     }
 
     @GetMapping("/{id}")
-    public ArrangementDTO getArrangementById(@PathVariable Long id) {
-        return arrangementService.getArrangementById(id);
+    public ResponseEntity<ArrangementDTO> getArrangementById(@PathVariable Long id) {
+        return ResponseEntity.ok(arrangementService.getArrangementById(id));
     }
 
     @PostMapping
-    public ArrangementDTO createArrangement(@RequestBody ArrangementDTO arrangementDTO) {
-        return arrangementService.createArrangement(arrangementDTO);
+    public ResponseEntity<ArrangementDTO> createArrangement(@RequestBody ArrangementDTO arrangementDTO) {
+        ArrangementDTO createdArrangement = arrangementService.createArrangement(arrangementDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdArrangement);
     }
 
-    @PatchMapping("/{id}")
-    public ArrangementDTO updateArrangement(@PathVariable Long id, @RequestBody ArrangementDTO arrangementDTO) {
-        return arrangementService.updateArrangement(id, arrangementDTO);
+    @PutMapping("/{id}")
+    public ResponseEntity<ArrangementDTO> updateArrangement(@PathVariable Long id,
+                                                            @RequestBody ArrangementDTO arrangementDTO) {
+        return ResponseEntity.ok(arrangementService.updateArrangement(id, arrangementDTO));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteArrangement(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteArrangement(@PathVariable Long id) {
         arrangementService.deleteArrangement(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{arrangementId}/based-on/{workflowId}")
-    public ArrangementDTO createBasedOnRelationship(@PathVariable Long arrangementId,
-                                                    @PathVariable Long workflowId) {
-        return arrangementService.createBasedOnRelationship(arrangementId, workflowId);
+    public ResponseEntity<ArrangementDTO> setBasedOnWorkflow(@PathVariable Long arrangementId,
+                                                             @PathVariable Long workflowId) {
+        return ResponseEntity.ok(arrangementService.setBasedOnWorkflow(arrangementId, workflowId));
+    }
+
+    @GetMapping("/{arrangementId}/workflow")
+    public ResponseEntity<WorkflowDTO> getWorkflowForArrangement(@PathVariable Long arrangementId) {
+        return ResponseEntity.ok(arrangementService.getWorkflowForArrangement(arrangementId));
+    }
+
+    @GetMapping("/workflow/{workflowId}")
+    public ResponseEntity<List<ArrangementDTO>> getArrangementsByWorkflow(@PathVariable Long workflowId) {
+        return ResponseEntity.ok(arrangementService.getArrangementsByWorkflow(workflowId));
     }
 
     @DeleteMapping("/{arrangementId}/based-on")
-    public void deleteBasedOnRelationship(@PathVariable Long arrangementId) {
+    public ResponseEntity<Void> deleteBasedOnRelationship(@PathVariable Long arrangementId) {
         arrangementService.deleteBasedOnRelationship(arrangementId);
-    }
-
-    @GetMapping("/{arrangementId}/based-on")
-    public WorkflowDTO getWorkflowForArrangement(@PathVariable Long arrangementId) {
-        return arrangementService.getWorkflowForArrangement(arrangementId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{arrangementId}/offers/{offerId}")
-    public ArrangementDTO addOfferToArrangement(@PathVariable Long arrangementId,
-                                                @PathVariable Long offerId) {
-        return arrangementService.addOfferToArrangement(arrangementId, offerId);
-    }
-
-    @DeleteMapping("/{arrangementId}/offers/{offerId}")
-    public void deleteOfferFromArrangement(@PathVariable Long arrangementId,
-                                           @PathVariable Long offerId) {
-        arrangementService.deleteOfferFromArrangement(arrangementId, offerId);
+    public ResponseEntity<ArrangementDTO> addOffer(@PathVariable Long arrangementId,
+                                                   @PathVariable Long offerId) {
+        return ResponseEntity.ok(arrangementService.addOfferToArrangement(arrangementId, offerId));
     }
 
     @GetMapping("/{arrangementId}/offers")
-    public List<OfferDTO> getOffersForArrangement(@PathVariable Long arrangementId) {
-        return arrangementService.getOffersForArrangement(arrangementId);
+    public ResponseEntity<List<OfferDTO>> getOffers(@PathVariable Long arrangementId) {
+        return ResponseEntity.ok(arrangementService.getOffersForArrangement(arrangementId));
     }
 
-    @GetMapping("/price-analysis")
-    public List<ArrangementPriceDTO> getPriceAnalysis() {
-        return arrangementService.getArrangementPriceAnalysis();
+    @GetMapping("/offers/{offerId}/arrangement")
+    public ResponseEntity<ArrangementDTO> getArrangement(@PathVariable Long offerId) {
+        return ResponseEntity.ok(arrangementService.getArrangementForOffer(offerId));
     }
 
-    @GetMapping("/ratings")
-    public List<ArrangementRatingDTO> getArrangementRatings() {
-        return arrangementService.getArrangementRatings();
+    @DeleteMapping("/{arrangementId}/offers/{offerId}")
+    public ResponseEntity<Void> removeOffer(@PathVariable Long arrangementId,
+                                            @PathVariable Long offerId) {
+        arrangementService.removeOfferFromArrangement(arrangementId, offerId);
+        return ResponseEntity.noContent().build();
     }
-
-
 }
