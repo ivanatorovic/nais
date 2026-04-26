@@ -1,9 +1,6 @@
 package rs.ac.uns.acs.nais.workflow_service.controller;
 
-import rs.ac.uns.acs.nais.workflow_service.dto.AdministratorPublishStatsDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.DirectorWorkflowStatsDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.UserDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.UserWorkflowStatsDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.*;
 import rs.ac.uns.acs.nais.workflow_service.model.User;
 import rs.ac.uns.acs.nais.workflow_service.service.IUserService;
 import org.springframework.web.bind.annotation.*;
@@ -67,8 +64,8 @@ public class UserController {
     }
 
     @GetMapping("/creates/one")
-    public User findOneCreatesRelationship(@RequestParam Long userId,
-                                           @RequestParam Long workflowId) {
+    public UserCreatesDTO findOneCreatesRelationship(@RequestParam Long userId,
+                                                     @RequestParam Long workflowId) {
         return userService.findOneCreatesRelationship(userId, workflowId);
     }
 
@@ -83,16 +80,16 @@ public class UserController {
         return userService.createPublishesRelationship(userId, arrangementId);
     }
 
-    @GetMapping("/{userId}/publishes/{arrangementId}")
-    public User findOnePublishesRelationship(@PathVariable Long userId, @PathVariable Long arrangementId) {
+    @GetMapping("/publishes/{userId}/{arrangementId}")
+    public UserPublishesDTO findOnePublishesRelationship(@PathVariable Long userId,
+                                                         @PathVariable Long arrangementId) {
         return userService.findOnePublishesRelationship(userId, arrangementId);
     }
 
     @GetMapping("/publishes")
-    public List<User> findAllPublishesRelationships() {
+    public List<UserPublishesDTO> findAllPublishesRelationships() {
         return userService.findAllPublishesRelationships();
     }
-
     @DeleteMapping("/{userId}/publishes/{arrangementId}")
     public void deletePublishesRelationship(@PathVariable Long userId, @PathVariable Long arrangementId) {
         userService.deletePublishesRelationship(userId, arrangementId);

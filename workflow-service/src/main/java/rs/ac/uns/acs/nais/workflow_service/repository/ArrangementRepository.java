@@ -19,6 +19,14 @@ public interface ArrangementRepository extends Neo4jRepository<Arrangement, Long
     void deleteArrangementByCustomId(Long id);
 
     @Query("""
+    MATCH (a:Arrangement {id: $arrangementId})-[:HAS_OFFER]->(existingOffer:Offer),
+          (newOffer:Offer {id: $offerId})
+    WHERE existingOffer.type = newOffer.type
+    RETURN count(existingOffer) > 0
+    """)
+    boolean existsOfferOfSameTypeForArrangement(Long arrangementId, Long offerId);
+
+    @Query("""
     MATCH (a:Arrangement {id: $arrangementId})-[r:BASED_ON]->(:Workflow)
     RETURN count(r) > 0
     """)

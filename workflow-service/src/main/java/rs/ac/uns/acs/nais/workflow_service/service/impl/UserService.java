@@ -1,16 +1,14 @@
 package rs.ac.uns.acs.nais.workflow_service.service.impl;
 
-import rs.ac.uns.acs.nais.workflow_service.dto.AdministratorPublishStatsDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.UserDTO;
-import rs.ac.uns.acs.nais.workflow_service.dto.UserWorkflowStatsDTO;
+import rs.ac.uns.acs.nais.workflow_service.dto.*;
 import rs.ac.uns.acs.nais.workflow_service.model.Role;
 import rs.ac.uns.acs.nais.workflow_service.model.User;
 import rs.ac.uns.acs.nais.workflow_service.repository.UserRepository;
+import rs.ac.uns.acs.nais.workflow_service.repository.WorkflowRepository;
 import rs.ac.uns.acs.nais.workflow_service.service.IUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import rs.ac.uns.acs.nais.workflow_service.dto.DirectorWorkflowStatsDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,9 +17,11 @@ import java.util.stream.Collectors;
 public class UserService implements IUserService {
 
     private final UserRepository userRepository;
+    private final WorkflowRepository workflowRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, WorkflowRepository workflowRepository) {
         this.userRepository = userRepository;
+        this.workflowRepository = workflowRepository;
     }
 
     @Override
@@ -130,6 +130,20 @@ public class UserService implements IUserService {
             );
         }
 
+        if (!workflowRepository.existsById(workflowId))  {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Workflow not found with id: " + workflowId
+            );
+        }
+
+        if (userRepository.existsCreatorForWorkflow(workflowId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Workflow already has a creator."
+            );
+        }
+
         return userRepository.createCreatesRelationship(userId, workflowId, createdAt);
     }
 
@@ -152,17 +166,17 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User findOneCreatesRelationship(Long userId, Long workflowId) {
+    public UserCreatesDTO findOneCreatesRelationship(Long userId, Long workflowId) {
         User user = userRepository.findOneCreatesRelationship(userId, workflowId);
 
         if (user == null) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
-                    "CREATES relationship not found for userId: " + userId + " and workflowId: " + workflowId
+                    "CREATES relationship not found"
             );
         }
 
-        return user;
+        return mapToCreatesDTO(user);
     }
 
     @Override
@@ -223,7 +237,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User findOnePublishesRelationship(Long userId, Long arrangementId) {
+    public UserPublishesDTO findOnePublishesRelationship(Long userId, Long arrangementId) {
         User user = userRepository.findOnePublishesRelationship(userId, arrangementId);
 
         if (user == null) {
@@ -233,12 +247,15 @@ public class UserService implements IUserService {
             );
         }
 
-        return user;
+        return mapToPublishesDTO(user);
     }
 
     @Override
-    public List<User> findAllPublishesRelationships() {
-        return userRepository.findAllPublishesRelationships();
+    public List <UserPublishesDTO> findAllPublishesRelationships() {
+        return userRepository.findAllPublishesRelationships()
+                .stream()
+                .map(this::mapToPublishesDTO)
+                .toList();
     }
 
     @Override
@@ -280,5 +297,46 @@ public class UserService implements IUserService {
     @Override
     public List<AdministratorPublishStatsDTO> getAdministratorPublishStats() {
         return userRepository.getAdministratorPublishStats();
+    }
+
+    private UserPublishesDTO mapToPublishesDTO(User user) {
+        List<PublishedArrangementDTO> arrangements = user.getPublishedArrangements()
+                .stream()
+                .map(a -> new PublishedArrangementDTO(
+                        a.getId(),
+                        a.getName(),
+                        a.getDestination(),
+                        a.getDescription(),
+                        a.getStartDate(),
+                        a.getEndDate()
+                ))
+                .toList();
+
+        return new UserPublishesDTO(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRole().toString(),
+                arrangements
+        );
+    }
+
+    private UserCreatesDTO mapToCreatesDTO(User user) {
+        List<CreatedWorkflowDTO> workflows = user.getCreatedWorkflows()
+                .stream()
+                .map(c -> new CreatedWorkflowDTO(
+                        c.getWorkflow().getId(),
+                        c.getWorkflow().getName(),
+                        c.getCreatedAt()
+                ))
+                .toList();
+
+        return new UserCreatesDTO(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRole().toString(),
+                workflows
+        );
     }
 }

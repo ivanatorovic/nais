@@ -20,6 +20,12 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
     void deleteUserByCustomId(Long id);
 
     @Query("""
+    MATCH (:User)-[:CREATES]->(w:Workflow {id: $workflowId})
+    RETURN count(w) > 0
+    """)
+    boolean existsCreatorForWorkflow(Long workflowId);
+
+    @Query("""
         MATCH (u:User {id: $userId}), (w:Workflow {id: $workflowId})
         MERGE (u)-[r:CREATES]->(w)
         SET r.createdAt = $createdAt
@@ -35,8 +41,8 @@ public interface UserRepository extends Neo4jRepository<User, Long> {
     User updateCreatesRelationship(Long userId, Long workflowId, String createdAt);
 
     @Query("""
-       MATCH (u:User {id: $userId})-[r:CREATES]->(w:Workflow {id: $workflowId})
-       RETURN u, r, w
+    MATCH (u:User {id: $userId})-[r:CREATES]->(w:Workflow {id: $workflowId})
+    RETURN u, collect(r), collect(w)
     """)
     User findOneCreatesRelationship(Long userId, Long workflowId);
 

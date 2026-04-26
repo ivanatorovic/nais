@@ -17,8 +17,6 @@ public class Offer {
     private Double adultsPrice;
     private Double kidsPrice;
 
-    @Relationship(type = "HAS_OFFER", direction = Relationship.Direction.INCOMING)
-    private Arrangement arrangement;
 
     public Offer() {
     }
@@ -62,10 +60,6 @@ public class Offer {
         return kidsPrice;
     }
 
-    public Arrangement getArrangement() {
-        return arrangement;
-    }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -94,7 +88,5 @@ public class Offer {
         this.kidsPrice = kidsPrice;
     }
 
-    public void setArrangement(Arrangement arrangement) {
-        this.arrangement = arrangement;
-    }
+
 }

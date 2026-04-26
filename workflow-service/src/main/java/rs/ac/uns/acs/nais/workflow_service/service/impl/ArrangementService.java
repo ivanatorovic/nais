@@ -141,6 +141,13 @@ public class ArrangementService implements IArrangementService {
             );
         }
 
+        if (arrangementRepository.existsBasedOnRelationship(arrangementId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Arrangement already has a workflow."
+            );
+        }
+
         return mapToBasicDTO(arrangement);
     }
 
@@ -189,10 +196,10 @@ public class ArrangementService implements IArrangementService {
             );
         }
 
-        if (arrangementRepository.existsHasOfferRelationship(offerId)) {
+        if (arrangementRepository.existsOfferOfSameTypeForArrangement(arrangementId, offerId)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Offer is already connected to another arrangement."
+                    "Arrangement already has an offer of this type."
             );
         }
 

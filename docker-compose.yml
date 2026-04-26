@@ -1,6 +1,18 @@
 version: '3'
 
 services:
+  workflow-service:
+    build: ./workflow-service
+    container_name: workflow-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - workflow-neo4j
+    environment:
+      SERVER_PORT: 8081
+      SPRING_NEO4J_URI: bolt://workflow-neo4j:7687
+      SPRING_NEO4J_AUTHENTICATION_USERNAME: neo4j
+      SPRING_NEO4J_AUTHENTICATION_PASSWORD: workflow
   workflow-neo4j:
     image: neo4j
     container_name: workflow-neo4j
